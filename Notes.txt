@@ -1,0 +1,2 @@
+oc extract secret/htpasswd-secret -n openshift-config --to . --confirm
+htpasswd -b -B htpasswd bhobbs redhat
