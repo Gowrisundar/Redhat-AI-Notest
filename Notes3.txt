@@ -1,0 +1,1359 @@
+[student@workstation ~]$ oc get-token 
+.ansible/      .bashrc        .ipython/      .mozilla/      Desktop/       Pictures/
+.auth/         .cache/        .jupyter/      .npm/          Documents/     Public/
+.bash_logout   .config/       .kube/         .ssh/          Downloads/     Templates/
+.bash_profile  .grading/      .local/        .venv/         Music/         Videos/
+[student@workstation ~]$ oc get-token 
+error: oidc authenticator error: oidc discovery error: Get "/.well-known/openid-configuration": unsupported protocol scheme ""
+[student@workstation ~]$ oc login -u admin -p redhatocp
+Login successful.
+
+You have access to 81 projects, the list has been suppressed. You can list all projects with 'oc projects'
+
+Using project "default".
+[student@workstation ~]$ oc config get-
+get-clusters  (Display clusters defined in the kubeconfig)
+get-contexts  (Describe one or many contexts)
+get-users     (Display users defined in the kubeconfig)
+[student@workstation ~]$ oc config get-
+get-clusters  (Display clusters defined in the kubeconfig)
+get-contexts  (Describe one or many contexts)
+get-users     (Display users defined in the kubeconfig)
+[student@workstation ~]$ oc config get-contexts 
+CURRENT   NAME                                      CLUSTER                     AUTHINFO                          NAMESPACE
+*         default/api-ocp4-example-com:6443/admin   api-ocp4-example-com:6443   admin/api-ocp4-example-com:6443   default
+[student@workstation ~]$ 
+[student@workstation ~]$ oc project redhat-ods-applications 
+Now using project "redhat-ods-applications" on server "https://api.ocp4.example.com:6443".
+[student@workstation ~]$ oc get route
+NAME              HOST/PORT                                                       PATH   SERVICES          PORT   TERMINATION          WILDCARD
+rhods-dashboard   rhods-dashboard-redhat-ods-applications.apps.ocp4.example.com          rhods-dashboard   8443   reencrypt/Redirect   None
+[student@workstation ~]$ firefox rhods-dashboard-redhat-ods-applications.apps.ocp4.example.com &
+[1] 35030
+[student@workstation ~]$ oc extract secret/htpasswd-secret -n openshift-config --to . --confirm 
+htpasswd
+[1]+  Done                    firefox rhods-dashboard-redhat-ods-applications.apps.ocp4.example.com
+[student@workstation ~]$ ls
+Desktop  Documents  Downloads  Music  Pictures  Public  Templates  Videos  htpasswd
+[student@workstation ~]$ cat htpasswd
+admin:$apr1$zSk6d0w1$fiSSlDD.FCuu1yAlDeBs/1
+developer:$apr1$.DYGDVBe$9HgWU79tfL/KiTUH6zU9Q0
+[student@workstation ~]$ htpasswd -b -B htpasswd bhobbs redhat
+Adding password for user bhobbs
+[student@workstation ~]$ htpasswd -b -B htpasswd jbells redhat
+Adding password for user jbells
+[student@workstation ~]$ htpasswd -b -B htpasswd bernard redhat
+Adding password for user bernard
+[student@workstation ~]$ htpasswd -b -B htpasswd pminstix redhat
+Adding password for user pminstix
+[student@workstation ~]$ htpasswd -b -B htpasswd supatree redhat
+Adding password for user supatree
+[student@workstation ~]$ oc set data secret/htpasswd-secret --from-
+--from-file     (Specify a file using its file path, in which case the file basename will b…)
+--from-literal  (Specify a key and literal value to set (i.e. mykey=somevalue))
+[student@workstation ~]$ oc set data secret/htpasswd-secret --from-file htpasswd=htpasswd -n openshift confirm
+error: there is no need to specify a resource type as a separate argument when passing arguments in resource/name form (e.g. 'oc get resource/<resource_name>' instead of 'oc get resource resource/<resource_name>'
+[student@workstation ~]$ oc set data secret/htpasswd-secret --from-file htpasswd=htpasswd -n openshift-config
+secret/htpasswd-secret data updated
+[student@workstation ~]$ oc whoami --show-console
+https://console-openshift-console.apps.ocp4.example.com
+[student@workstation ~]$ firefox $(oc whoami --show-console) &
+[1] 35369
+[student@workstation ~]$ oc adm policy add-cluster-role-to-user cluster-admin bernard
+Warning: User 'bernard' not found
+clusterrole.rbac.authorization.k8s.io/cluster-admin added: "bernard"
+[1]+  Done                    firefox $(oc whoami --show-console)
+[student@workstation ~]$ oc adm policy add-cluster-role-to-user cluster-admin jbells
+Warning: User 'jbells' not found
+clusterrole.rbac.authorization.k8s.io/cluster-admin added: "jbells"
+[student@workstation ~]$ oc adm groups add-users rhods-admin bernard jbells
+error: Error: groups.user.openshift.io are not enabled on this cluster.
+Is the embeedded OAuth server disabled?. 
+
+Original error:
+%!w(<nil>)
+[student@workstation ~]$ oc adm groups add-users rhods-admins bernard jbells
+group.user.openshift.io/rhods-admins added: ["bernard" "jbells"]
+[student@workstation ~]$ oc project
+Using project "redhat-ods-applications" on server "https://api.ocp4.example.com:6443".
+[student@workstation ~]$ oc get g
+gateways.networking.istio.io  groups.user.openshift.io      
+[student@workstation ~]$ oc get odh
+odhapplications.dashboard.opendatahub.io  odhdocuments.dashboard.opendatahub.io
+odhdashboardconfigs.opendatahub.io        odhquickstarts.console.openshift.io
+[student@workstation ~]$ oc get odhdashboardconfigs.opendatahub.io -o yaml
+apiVersion: v1
+items:
+- apiVersion: opendatahub.io/v1alpha
+  kind: OdhDashboardConfig
+  metadata:
+    annotations:
+      internal.config.kubernetes.io/previousKinds: OdhDashboardConfig
+      internal.config.kubernetes.io/previousNames: odh-dashboard-config
+      internal.config.kubernetes.io/previousNamespaces: default
+    creationTimestamp: "2025-03-20T20:47:13Z"
+    generation: 3
+    labels:
+      app: rhods-dashboard
+      app.kubernetes.io/part-of: rhods-dashboard
+      app.opendatahub.io/rhods-dashboard: "true"
+    name: odh-dashboard-config
+    namespace: redhat-ods-applications
+    resourceVersion: "25214510"
+    uid: d6368f4f-1bb5-4c62-8d7a-32c8b78e54e2
+  spec:
+    dashboardConfig:
+      disableAcceleratorProfiles: false
+      disableBYONImageStream: false
+      disableBiasMetrics: true
+      disableClusterManager: false
+      disableConnectionTypes: true
+      disableCustomServingRuntimes: false
+      disableDistributedWorkloads: false
+      disableHome: false
+      disableISVBadges: false
+      disableInfo: false
+      disableKServe: false
+      disableKServeAuth: false
+      disableKServeMetrics: false
+      disableModelMesh: false
+      disableModelRegistry: true
+      disableModelServing: false
+      disablePerformanceMetrics: false
+      disablePipelines: false
+      disableProjectSharing: false
+      disableProjects: false
+      disableSupport: false
+      disableTracking: false
+      enablement: true
+    groupsConfig:
+      adminGroups: rhods-admins
+      allowedGroups: system:authenticated
+    modelServerSizes:
+    - name: Small
+      resources:
+        limits:
+          cpu: "2"
+          memory: 8Gi
+        requests:
+          cpu: "1"
+          memory: 4Gi
+    - name: Medium
+      resources:
+        limits:
+          cpu: "8"
+          memory: 10Gi
+        requests:
+          cpu: "4"
+          memory: 8Gi
+    - name: Large
+      resources:
+        limits:
+          cpu: "10"
+          memory: 20Gi
+        requests:
+          cpu: "6"
+          memory: 16Gi
+    notebookController:
+      enabled: true
+      notebookNamespace: rhods-notebooks
+      pvcSize: 20Gi
+    notebookSizes:
+    - name: Small
+      resources:
+        limits:
+          cpu: "2"
+          memory: 8Gi
+        requests:
+          cpu: "1"
+          memory: 8Gi
+    - name: Medium
+      resources:
+        limits:
+          cpu: "6"
+          memory: 24Gi
+        requests:
+          cpu: "3"
+          memory: 24Gi
+    - name: Large
+      resources:
+        limits:
+          cpu: "14"
+          memory: 56Gi
+        requests:
+          cpu: "7"
+          memory: 56Gi
+    - name: Micro
+      resources:
+        limits:
+          cpu: "2"
+          memory: 2Gi
+        requests:
+          cpu: "1"
+          memory: 1Gi
+    templateDisablement: []
+    templateOrder: []
+kind: List
+metadata:
+  resourceVersion: ""
+[student@workstation ~]$ oc get groups.user.openshift.io rhods-admins researchteam 
+NAME           USERS
+rhods-admins   bernard, jbells
+researchteam   bhobbs, pminstix, supatree
+[student@workstation ~]$ oc get clusterr
+clusterresourcequotas.quota.openshift.io
+clusterrolebindings.authorization.openshift.io
+clusterrolebindings.rbac.authorization.k8s.io
+clusterroles.authorization.openshift.io
+clusterroles.rbac.authorization.k8s.io
+[student@workstation ~]$ oc get clusterrole
+clusterrolebindings.authorization.openshift.io
+clusterrolebindings.rbac.authorization.k8s.io
+clusterroles.authorization.openshift.io
+clusterroles.rbac.authorization.k8s.io
+[student@workstation ~]$ oc get clusterrole
+clusterrolebindings.authorization.openshift.io
+clusterrolebindings.rbac.authorization.k8s.io
+clusterroles.authorization.openshift.io
+clusterroles.rbac.authorization.k8s.io
+[student@workstation ~]$ oc get clusterrolebindings
+NAME                                                                        ROLE                                                                                    AGE
+alertmanager-main                                                           ClusterRole/alertmanager-main                                                           404d
+argo-binding                                                                ClusterRole/argo-cluster-role                                                           266d
+basic-users                                                                 ClusterRole/basic-user                                                                  404d
+cloud-controller-manager                                                    ClusterRole/cloud-controller-manager                                                    404d
+cloud-credential-operator-rolebinding                                       ClusterRole/cloud-credential-operator-role                                              404d
+cloud-node-manager                                                          ClusterRole/cloud-node-manager                                                          404d
+cluster-admin                                                               ClusterRole/cluster-admin                                                               404d
+cluster-admin-0                                                             ClusterRole/cluster-admin                                                               404d
+cluster-admin-1                                                             ClusterRole/cluster-admin                                                               3m26s
+cluster-admin-2                                                             ClusterRole/cluster-admin                                                               2m57s
+cluster-admins                                                              ClusterRole/cluster-admin                                                               404d
+cluster-autoscaler                                                          ClusterRole/cluster-autoscaler                                                          404d
+cluster-autoscaler-operator                                                 ClusterRole/cluster-autoscaler-operator                                                 404d
+cluster-baremetal-operator                                                  ClusterRole/cluster-baremetal-operator                                                  404d
+cluster-monitoring-operator                                                 ClusterRole/cluster-monitoring-operator                                                 404d
+cluster-network-operator                                                    ClusterRole/cluster-admin                                                               404d
+cluster-node-tuning-operator                                                ClusterRole/cluster-node-tuning-operator                                                404d
+cluster-node-tuning:tuned                                                   ClusterRole/cluster-node-tuning:tuned                                                   404d
+cluster-readers                                                             ClusterRole/cluster-reader                                                              404d
+cluster-samples-operator                                                    ClusterRole/cluster-samples-operator                                                    404d
+cluster-samples-operator-imageconfig-reader                                 ClusterRole/cluster-samples-operator-imageconfig-reader                                 404d
+cluster-samples-operator-proxy-reader                                       ClusterRole/cluster-samples-operator-proxy-reader                                       404d
+cluster-status-binding                                                      ClusterRole/cluster-status                                                              404d
+cluster-storage-operator-role                                               ClusterRole/cluster-admin                                                               404d
+cluster-version-operator                                                    ClusterRole/cluster-admin                                                               404d
+console                                                                     ClusterRole/console                                                                     404d
+console-auth-delegator                                                      ClusterRole/system:auth-delegator                                                       404d
+console-extensions-reader                                                   ClusterRole/console-extensions-reader                                                   404d
+console-operator                                                            ClusterRole/console-operator                                                            404d
+console-operator-auth-delegator                                             ClusterRole/system:auth-delegator                                                       404d
+control-plane-machine-set-operator                                          ClusterRole/control-plane-machine-set-operator                                          404d
+csi-snapshot-controller-operator-clusterrole                                ClusterRole/csi-snapshot-controller-operator-clusterrole                                404d
+csi-snapshot-controller-runner-operator                                     ClusterRole/openshift-csi-snapshot-controller-runner                                    404d
+csi-snapshot-webhook-clusterrolebinding                                     ClusterRole/csi-snapshot-webhook-clusterrole                                            404d
+custom-account-openshift-machine-config-operator                            ClusterRole/cluster-admin                                                               404d
+data-science-pipelines-operator-manager-argo-rolebinding                    ClusterRole/data-science-pipelines-operator-manager-argo-role                           266d
+data-science-pipelines-operator-manager-rolebinding                         ClusterRole/data-science-pipelines-operator-manager-role                                266d
+default-account-cluster-image-registry-operator                             ClusterRole/cluster-image-registry-operator                                             404d
+dns-monitoring                                                              ClusterRole/dns-monitoring                                                              404d
+etcd-clusterrolebinding                                                     ClusterRole/etcd-role                                                                   266d
+helm-chartrepos-view                                                        ClusterRole/helm-chartrepos-viewer                                                      404d
+insights-operator                                                           ClusterRole/insights-operator                                                           404d
+insights-operator-auth                                                      ClusterRole/system:auth-delegator                                                       404d
+insights-operator-gather                                                    ClusterRole/insights-operator-gather                                                    404d
+insights-operator-gather-reader                                             ClusterRole/cluster-reader                                                              404d
+istio-operator-service-system:auth-delegator                                ClusterRole/system:auth-delegator                                                       266d
+istiod-internal-data-science-smcp-istio-system                              ClusterRole/istiod-internal-data-science-smcp-istio-system                              266d
+knative-openshift-service-system:auth-delegator                             ClusterRole/system:auth-delegator                                                       266d
+knative-operator-webhook-service-system:auth-delegator                      ClusterRole/system:auth-delegator                                                       266d
+knative-serving-activator-cluster                                           ClusterRole/knative-serving-activator-cluster                                           266d
+knative-serving-controller-addressable-resolver                             ClusterRole/knative-serving-aggregated-addressable-resolver                             266d
+knative-serving-controller-admin                                            ClusterRole/knative-serving-admin                                                       266d
+kserve-manager-rolebinding                                                  ClusterRole/kserve-manager-role                                                         266d
+kserve-proxy-rolebinding                                                    ClusterRole/kserve-proxy-role                                                           266d
+kube-apiserver                                                              ClusterRole/kube-apiserver                                                              404d
+kube-state-metrics                                                          ClusterRole/kube-state-metrics                                                          404d
+machine-api-controllers                                                     ClusterRole/machine-api-controllers                                                     404d
+machine-api-controllers-baremetal                                           ClusterRole/machine-api-controllers-metal3-remediation                                  404d
+machine-api-operator                                                        ClusterRole/machine-api-operator                                                        404d
+machine-api-operator-ext-remediation                                        ClusterRole/machine-api-operator-ext-remediation                                        404d
+machine-config-controller                                                   ClusterRole/machine-config-controller                                                   404d
+machine-config-daemon                                                       ClusterRole/machine-config-daemon                                                       404d
+machine-config-server                                                       ClusterRole/machine-config-server                                                       404d
+machine-os-builder                                                          ClusterRole/machine-os-builder                                                          404d
+machine-os-builder-anyuid                                                   ClusterRole/system:openshift:scc:anyuid                                                 404d
+marketplace-operator                                                        ClusterRole/marketplace-operator                                                        404d
+metrics-daemon-sa-rolebinding                                               ClusterRole/metrics-daemon-role                                                         404d
+metrics-server:system:auth-delegator                                        ClusterRole/system:auth-delegator                                                       404d
+modelmesh-controller-rolebinding                                            ClusterRole/modelmesh-controller-role                                                   266d
+multus-admission-controller-webhook                                         ClusterRole/multus-admission-controller-webhook                                         404d
+multus-ancillary-tools                                                      ClusterRole/multus-ancillary-tools                                                      404d
+multus-cluster-readers                                                      ClusterRole/multus-ancillary-tools                                                      404d
+multus-group                                                                ClusterRole/multus                                                                      404d
+multus-transient                                                            ClusterRole/multus-ancillary-tools                                                      404d
+multus-whereabouts                                                          ClusterRole/whereabouts-cni                                                             404d
+network-diagnostics                                                         ClusterRole/network-diagnostics                                                         404d
+network-node-identity                                                       ClusterRole/network-node-identity                                                       404d
+node-exporter                                                               ClusterRole/node-exporter                                                               404d
+notebook-controller-role-binding                                            ClusterRole/notebook-controller-role                                                    266d
+odh-model-controller-rolebinding-opendatahub                                ClusterRole/odh-model-controller-role                                                   266d
+odh-notebook-controller-manager-rolebinding                                 ClusterRole/odh-notebook-controller-manager-role                                        266d
+olm-operator-binding-openshift-operator-lifecycle-manager                   ClusterRole/system:controller:operator-lifecycle-manager                                404d
+openshift-csi-snapshot-controller-role                                      ClusterRole/openshift-csi-snapshot-controller-runner                                    404d
+openshift-dns                                                               ClusterRole/openshift-dns                                                               404d
+openshift-dns-operator                                                      ClusterRole/openshift-dns-operator                                                      404d
+openshift-image-registry-pruner                                             ClusterRole/system:image-pruner                                                         404d
+openshift-ingress-operator                                                  ClusterRole/openshift-ingress-operator                                                  404d
+openshift-ingress-router                                                    ClusterRole/openshift-ingress-router                                                    404d
+openshift-iptables-alerter                                                  ClusterRole/openshift-iptables-alerter                                                  404d
+openshift-ovn-kubernetes-control-plane-limited                              ClusterRole/openshift-ovn-kubernetes-control-plane-limited                              404d
+openshift-ovn-kubernetes-node-identity-limited                              ClusterRole/openshift-ovn-kubernetes-node-limited                                       404d
+openshift-ovn-kubernetes-node-kube-rbac-proxy                               ClusterRole/openshift-ovn-kubernetes-kube-rbac-proxy                                    404d
+openshift-pipelines-clusterinterceptors                                     ClusterRole/openshift-pipelines-clusterinterceptors                                     266d
+openshift-pipelines-oper-9BHD8qJPqlzDH8GyVEL97SXH3lRxnwtE0iPJcW             ClusterRole/openshift-pipelines-oper-9BHD8qJPqlzDH8GyVEL97SXH3lRxnwtE0iPJcW             266d
+openshift-pipelines-permission                                              ClusterRole/pipelines-scc-role                                                          266d
+openshift-state-metrics                                                     ClusterRole/openshift-state-metrics                                                     404d
+openstack-cloud-controller-manager                                          ClusterRole/openstack-cloud-controller-manager                                          404d
+ossm-cni                                                                    ClusterRole/ossm-cni                                                                    266d
+packageserver-service-system:auth-delegator                                 ClusterRole/system:auth-delegator                                                       404d
+pipelines-as-code-controller-clusterbinding                                 ClusterRole/pipeline-as-code-controller-clusterrole                                     266d
+pipelines-as-code-watcher-clusterbinding                                    ClusterRole/pipeline-as-code-watcher-clusterrole                                        266d
+pipelines-as-code-webhook-clusterbinding                                    ClusterRole/pipeline-as-code-webhook-clusterrole                                        266d
+prometheus-k8s                                                              ClusterRole/prometheus-k8s                                                              404d
+prometheus-k8s-scheduler-resources                                          ClusterRole/prometheus-k8s-scheduler-resources                                          404d
+prometheus-k8s-viewer                                                       ClusterRole/prometheus-k8s-viewer                                                       266d
+prometheus-operator                                                         ClusterRole/prometheus-operator                                                         404d
+proxy-rolebinding                                                           ClusterRole/proxy-role                                                                  266d
+rbac-proxy-metrics-prom-rb                                                  ClusterRole/rbac-proxy-metrics-prom                                                     266d
+rbac-proxy-reviews-prom-rb-activator                                        ClusterRole/rbac-proxy-reviews-prom                                                     266d
+rbac-proxy-reviews-prom-rb-controller                                       ClusterRole/rbac-proxy-reviews-prom                                                     266d
+registry-monitoring                                                         ClusterRole/registry-monitoring                                                         404d
+registry-registry-role                                                      ClusterRole/system:registry                                                             404d
+rhods-dashboard                                                             ClusterRole/rhods-dashboard                                                             266d
+rhods-dashboard-auth-delegator                                              ClusterRole/system:auth-delegator                                                       266d
+rhods-dashboard-monitoring                                                  ClusterRole/cluster-monitoring-view                                                     266d
+rhods-operator.2.13.1-4lNqhLu5jQkiTRpmaLMrguhY8khY3V0WOWPIzf                ClusterRole/rhods-operator.2.13.1-4lNqhLu5jQkiTRpmaLMrguhY8khY3V0WOWPIzf                266d
+router-monitoring                                                           ClusterRole/router-monitoring                                                           404d
+run-nfs-client-provisioner                                                  ClusterRole/nfs-client-provisioner-runner                                               404d
+self-access-reviewers                                                       ClusterRole/self-access-reviewer                                                        404d
+self-provisioners                                                           ClusterRole/self-provisioner                                                            404d
+serverless-operator.v1.3-29y0VIC6kp9U6QDW1iEj266VTU71fWu0JwE8Z0             ClusterRole/serverless-operator.v1.3-29y0VIC6kp9U6QDW1iEj266VTU71fWu0JwE8Z0             266d
+serverless-operator.v1.3-5Dmwlz6xmRK7ZCohdcW5B2ASIMlbJ1rxMNUf7o             ClusterRole/serverless-operator.v1.3-5Dmwlz6xmRK7ZCohdcW5B2ASIMlbJ1rxMNUf7o             266d
+serverless-operator.v1.3-bgDzdghaTgqRJtymaHwjuOXn9y2a36dADdb1nW             ClusterRole/serverless-operator.v1.3-bgDzdghaTgqRJtymaHwjuOXn9y2a36dADdb1nW             266d
+servicemeshoperator.v2.6-2ikqVElCJosm7UCIz5BKsBYtiAwX87henMaOFD             ClusterRole/servicemeshoperator.v2.6-2ikqVElCJosm7UCIz5BKsBYtiAwX87henMaOFD             266d
+storage-version-migration-migrator                                          ClusterRole/cluster-admin                                                               404d
+system-bootstrap-node-bootstrapper                                          ClusterRole/system:node-bootstrapper                                                    404d
+system-bootstrap-node-renewal                                               ClusterRole/system:certificates.k8s.io:certificatesigningrequests:selfnodeclient        404d
+system:basic-user                                                           ClusterRole/system:basic-user                                                           404d
+system:build-strategy-docker-binding                                        ClusterRole/system:build-strategy-docker                                                404d
+system:build-strategy-jenkinspipeline-binding                               ClusterRole/system:build-strategy-jenkinspipeline                                       404d
+system:build-strategy-source-binding                                        ClusterRole/system:build-strategy-source                                                404d
+system:controller:attachdetach-controller                                   ClusterRole/system:controller:attachdetach-controller                                   404d
+system:controller:certificate-controller                                    ClusterRole/system:controller:certificate-controller                                    404d
+system:controller:clusterrole-aggregation-controller                        ClusterRole/system:controller:clusterrole-aggregation-controller                        404d
+system:controller:cronjob-controller                                        ClusterRole/system:controller:cronjob-controller                                        404d
+system:controller:daemon-set-controller                                     ClusterRole/system:controller:daemon-set-controller                                     404d
+system:controller:deployment-controller                                     ClusterRole/system:controller:deployment-controller                                     404d
+system:controller:disruption-controller                                     ClusterRole/system:controller:disruption-controller                                     404d
+system:controller:endpoint-controller                                       ClusterRole/system:controller:endpoint-controller                                       404d
+system:controller:endpointslice-controller                                  ClusterRole/system:controller:endpointslice-controller                                  404d
+system:controller:endpointslicemirroring-controller                         ClusterRole/system:controller:endpointslicemirroring-controller                         404d
+system:controller:ephemeral-volume-controller                               ClusterRole/system:controller:ephemeral-volume-controller                               404d
+system:controller:expand-controller                                         ClusterRole/system:controller:expand-controller                                         404d
+system:controller:generic-garbage-collector                                 ClusterRole/system:controller:generic-garbage-collector                                 404d
+system:controller:horizontal-pod-autoscaler                                 ClusterRole/system:controller:horizontal-pod-autoscaler                                 404d
+system:controller:job-controller                                            ClusterRole/system:controller:job-controller                                            404d
+system:controller:legacy-service-account-token-cleaner                      ClusterRole/system:controller:legacy-service-account-token-cleaner                      404d
+system:controller:namespace-controller                                      ClusterRole/system:controller:namespace-controller                                      404d
+system:controller:node-controller                                           ClusterRole/system:controller:node-controller                                           404d
+system:controller:persistent-volume-binder                                  ClusterRole/system:controller:persistent-volume-binder                                  404d
+system:controller:pod-garbage-collector                                     ClusterRole/system:controller:pod-garbage-collector                                     404d
+system:controller:pv-protection-controller                                  ClusterRole/system:controller:pv-protection-controller                                  404d
+system:controller:pvc-protection-controller                                 ClusterRole/system:controller:pvc-protection-controller                                 404d
+system:controller:replicaset-controller                                     ClusterRole/system:controller:replicaset-controller                                     404d
+system:controller:replication-controller                                    ClusterRole/system:controller:replication-controller                                    404d
+system:controller:resourcequota-controller                                  ClusterRole/system:controller:resourcequota-controller                                  404d
+system:controller:root-ca-cert-publisher                                    ClusterRole/system:controller:root-ca-cert-publisher                                    404d
+system:controller:route-controller                                          ClusterRole/system:controller:route-controller                                          404d
+system:controller:service-account-controller                                ClusterRole/system:controller:service-account-controller                                404d
+system:controller:service-ca-cert-publisher                                 ClusterRole/system:controller:service-ca-cert-publisher                                 404d
+system:controller:service-controller                                        ClusterRole/system:controller:service-controller                                        404d
+system:controller:statefulset-controller                                    ClusterRole/system:controller:statefulset-controller                                    404d
+system:controller:ttl-after-finished-controller                             ClusterRole/system:controller:ttl-after-finished-controller                             404d
+system:controller:ttl-controller                                            ClusterRole/system:controller:ttl-controller                                            404d
+system:deployer                                                             ClusterRole/system:deployer                                                             404d
+system:discovery                                                            ClusterRole/system:discovery                                                            404d
+system:image-builder                                                        ClusterRole/system:image-builder                                                        404d
+system:image-puller                                                         ClusterRole/system:image-puller                                                         404d
+system:kube-controller-manager                                              ClusterRole/system:kube-controller-manager                                              404d
+system:kube-dns                                                             ClusterRole/system:kube-dns                                                             404d
+system:kube-scheduler                                                       ClusterRole/system:kube-scheduler                                                       404d
+system:masters                                                              ClusterRole/system:master                                                               404d
+system:metrics-server                                                       ClusterRole/system:metrics-server                                                       404d
+system:monitoring                                                           ClusterRole/system:monitoring                                                           404d
+system:node                                                                 ClusterRole/system:node                                                                 404d
+system:node-admin                                                           ClusterRole/system:node-admin                                                           404d
+system:node-admins                                                          ClusterRole/system:node-admin                                                           404d
+system:node-bootstrapper                                                    ClusterRole/system:node-bootstrapper                                                    404d
+system:node-proxier                                                         ClusterRole/system:node-proxier                                                         404d
+system:node-proxiers                                                        ClusterRole/system:node-proxier                                                         404d
+system:oauth-token-deleters                                                 ClusterRole/system:oauth-token-deleter                                                  404d
+system:openshift:controller:build-config-change-controller                  ClusterRole/system:openshift:controller:build-config-change-controller                  404d
+system:openshift:controller:build-controller                                ClusterRole/system:openshift:controller:build-controller                                404d
+system:openshift:controller:cluster-csr-approver-controller                 ClusterRole/system:openshift:controller:cluster-csr-approver-controller                 404d
+system:openshift:controller:cluster-quota-reconciliation-controller         ClusterRole/system:openshift:controller:cluster-quota-reconciliation-controller         404d
+system:openshift:controller:default-rolebindings-controller                 ClusterRole/system:openshift:controller:default-rolebindings-controller                 404d
+system:openshift:controller:deployer-controller                             ClusterRole/system:openshift:controller:deployer-controller                             404d
+system:openshift:controller:deploymentconfig-controller                     ClusterRole/system:openshift:controller:deploymentconfig-controller                     404d
+system:openshift:controller:horizontal-pod-autoscaler                       ClusterRole/system:openshift:controller:horizontal-pod-autoscaler                       404d
+system:openshift:controller:image-import-controller                         ClusterRole/system:openshift:controller:image-import-controller                         404d
+system:openshift:controller:image-trigger-controller                        ClusterRole/system:openshift:controller:image-trigger-controller                        404d
+system:openshift:controller:kube-apiserver-check-endpoints-auth-delegator   ClusterRole/system:auth-delegator                                                       404d
+system:openshift:controller:kube-apiserver-check-endpoints-crd-reader       ClusterRole/system:openshift:controller:check-endpoints-crd-reader                      404d
+system:openshift:controller:kube-apiserver-check-endpoints-node-reader      ClusterRole/system:openshift:controller:check-endpoints-node-reader                     404d
+system:openshift:controller:machine-approver                                ClusterRole/system:openshift:controller:machine-approver                                404d
+system:openshift:controller:namespace-security-allocation-controller        ClusterRole/system:openshift:controller:namespace-security-allocation-controller        404d
+system:openshift:controller:origin-namespace-controller                     ClusterRole/system:openshift:controller:origin-namespace-controller                     404d
+system:openshift:controller:podsecurity-admission-label-syncer-controller   ClusterRole/system:openshift:controller:podsecurity-admission-label-syncer-controller   404d
+system:openshift:controller:privileged-namespaces-psa-label-syncer          ClusterRole/system:openshift:controller:privileged-namespaces-psa-label-syncer          404d
+system:openshift:controller:pv-recycler-controller                          ClusterRole/system:openshift:controller:pv-recycler-controller                          404d
+system:openshift:controller:resourcequota-controller                        ClusterRole/system:openshift:controller:resourcequota-controller                        404d
+system:openshift:controller:service-ca                                      ClusterRole/system:openshift:controller:service-ca                                      404d
+system:openshift:controller:service-ingress-ip-controller                   ClusterRole/system:openshift:controller:service-ingress-ip-controller                   404d
+system:openshift:controller:serviceaccount-controller                       ClusterRole/system:openshift:controller:serviceaccount-controller                       404d
+system:openshift:controller:serviceaccount-pull-secrets-controller          ClusterRole/system:openshift:controller:serviceaccount-pull-secrets-controller          404d
+system:openshift:controller:template-instance-controller                    ClusterRole/system:openshift:controller:template-instance-controller                    404d
+system:openshift:controller:template-instance-controller:admin              ClusterRole/admin                                                                       404d
+system:openshift:controller:template-instance-finalizer-controller          ClusterRole/system:openshift:controller:template-instance-finalizer-controller          404d
+system:openshift:controller:template-instance-finalizer-controller:admin    ClusterRole/admin                                                                       404d
+system:openshift:controller:template-service-broker                         ClusterRole/system:openshift:controller:template-service-broker                         404d
+system:openshift:controller:unidling-controller                             ClusterRole/system:openshift:controller:unidling-controller                             404d
+system:openshift:discovery                                                  ClusterRole/system:openshift:discovery                                                  404d
+system:openshift:oauth-apiserver                                            ClusterRole/cluster-admin                                                               404d
+system:openshift:openshift-apiserver                                        ClusterRole/cluster-admin                                                               404d
+system:openshift:openshift-authentication                                   ClusterRole/cluster-admin                                                               404d
+system:openshift:openshift-controller-manager                               ClusterRole/system:openshift:openshift-controller-manager                               404d
+system:openshift:openshift-controller-manager:image-trigger-controller      ClusterRole/system:openshift:openshift-controller-manager:image-trigger-controller      404d
+system:openshift:openshift-controller-manager:ingress-to-route-controller   ClusterRole/system:openshift:openshift-controller-manager:ingress-to-route-controller   404d
+system:openshift:openshift-controller-manager:update-buildconfig-status     ClusterRole/system:openshift:openshift-controller-manager:update-buildconfig-status     404d
+system:openshift:openshift-route-controller-manager                         ClusterRole/system:openshift:openshift-route-controller-manager                         404d
+system:openshift:operator:authentication                                    ClusterRole/cluster-admin                                                               404d
+system:openshift:operator:cloud-controller-manager                          ClusterRole/system:openshift:operator:cloud-controller-manager                          404d
+system:openshift:operator:cluster-kube-scheduler-operator                   ClusterRole/cluster-admin                                                               404d
+system:openshift:operator:etcd-backup-crb                                   ClusterRole/system:openshift:operator:etcd-backup-role                                  404d
+system:openshift:operator:etcd-operator                                     ClusterRole/cluster-admin                                                               404d
+system:openshift:operator:kube-apiserver-operator                           ClusterRole/cluster-admin                                                               404d
+system:openshift:operator:kube-apiserver-recovery                           ClusterRole/cluster-admin                                                               404d
+system:openshift:operator:kube-controller-manager-operator                  ClusterRole/cluster-admin                                                               404d
+system:openshift:operator:kube-controller-manager-recovery                  ClusterRole/cluster-admin                                                               404d
+system:openshift:operator:kube-scheduler-recovery                           ClusterRole/cluster-admin                                                               404d
+system:openshift:operator:kube-scheduler:public-2                           ClusterRole/system:kube-scheduler                                                       404d
+system:openshift:operator:kube-storage-version-migrator-operator            ClusterRole/cluster-admin                                                               404d
+system:openshift:operator:openshift-apiserver-operator                      ClusterRole/cluster-admin                                                               404d
+system:openshift:operator:openshift-config-operator                         ClusterRole/cluster-admin                                                               404d
+system:openshift:operator:openshift-controller-manager-operator             ClusterRole/cluster-admin                                                               404d
+system:openshift:operator:openshift-etcd-installer                          ClusterRole/cluster-admin                                                               404d
+system:openshift:operator:openshift-kube-apiserver-installer                ClusterRole/cluster-admin                                                               404d
+system:openshift:operator:openshift-kube-controller-manager-installer       ClusterRole/cluster-admin                                                               404d
+system:openshift:operator:openshift-kube-scheduler-installer                ClusterRole/cluster-admin                                                               404d
+system:openshift:operator:service-ca-operator                               ClusterRole/cluster-admin                                                               404d
+system:openshift:public-info-viewer                                         ClusterRole/system:openshift:public-info-viewer                                         404d
+system:openshift:scc:hostmount-anyuid                                       ClusterRole/system:openshift:scc:hostmount-anyuid                                       404d
+system:openshift:scc:restricted-v2                                          ClusterRole/system:openshift:scc:restricted-v2                                          404d
+system:openshift:tokenreview-openshift-controller-manager                   ClusterRole/system:openshift:tokenreview-openshift-controller-manager                   404d
+system:openshift:tokenreview-openshift-route-controller-manager             ClusterRole/system:openshift:tokenreview-openshift-route-controller-manager             404d
+system:openshift:useroauthaccesstoken-manager                               ClusterRole/system:openshift:useroauthaccesstoken-manager                               404d
+system:public-info-viewer                                                   ClusterRole/system:public-info-viewer                                                   404d
+system:scope-impersonation                                                  ClusterRole/system:scope-impersonation                                                  404d
+system:sdn-readers                                                          ClusterRole/system:sdn-reader                                                           404d
+system:service-account-issuer-discovery                                     ClusterRole/system:service-account-issuer-discovery                                     404d
+system:volume-scheduler                                                     ClusterRole/system:volume-scheduler                                                     404d
+system:webhooks                                                             ClusterRole/system:webhook                                                              404d
+tekton-chains-controller-cluster-access                                     ClusterRole/tekton-chains-controller-cluster-access                                     266d
+tekton-chains-controller-tenant-access                                      ClusterRole/tekton-chains-controller-tenant-access                                      266d
+tekton-clustertasks-view-rolebinding-all-users                              ClusterRole/tekton-clustertasks-view-role                                               266d
+tekton-clustertriggerbindings-view-rolebinding-all-users                    ClusterRole/tekton-clustertriggerbindings-view-role                                     266d
+tekton-config-read-rolebinding                                              ClusterRole/tekton-config-read-role                                                     266d
+tekton-events-controller-cluster-access                                     ClusterRole/tekton-events-controller-cluster-access                                     266d
+tekton-operators-proxy-webhook-admin                                        ClusterRole/tekton-operators-proxy-admin                                                266d
+tekton-pipelines-controller-cluster-access                                  ClusterRole/tekton-pipelines-controller-cluster-access                                  266d
+tekton-pipelines-controller-tenant-access                                   ClusterRole/tekton-pipelines-controller-tenant-access                                   266d
+tekton-pipelines-resolvers                                                  ClusterRole/tekton-pipelines-resolvers-resolution-request-updates                       266d
+tekton-pipelines-webhook-cluster-access                                     ClusterRole/tekton-pipelines-webhook-cluster-access                                     266d
+tekton-resource-pruner                                                      ClusterRole/tekton-resource-pruner                                                      266d
+tekton-result-read-rolebinding                                              ClusterRole/tekton-result-read-role                                                     266d
+tekton-triggers-controller-admin                                            ClusterRole/tekton-triggers-admin                                                       266d
+tekton-triggers-core-interceptors                                           ClusterRole/tekton-triggers-core-interceptors                                           266d
+tekton-triggers-core-interceptors-secrets                                   ClusterRole/tekton-triggers-core-interceptors-secrets                                   266d
+tekton-triggers-webhook-admin                                               ClusterRole/tekton-triggers-admin                                                       266d
+thanos-querier                                                              ClusterRole/thanos-querier                                                              404d
+trustyai-service-operator-manager-rolebinding                               ClusterRole/trustyai-service-operator-manager-role                                      266d
+trustyai-service-operator-proxy-rolebinding                                 ClusterRole/trustyai-service-operator-proxy-role                                        266d
+[student@workstation ~]$ oc get clusterrolebindings -o wide
+NAME                                                                        ROLE                                                                                    AGE     USERS                                                            GROUPS                                         SERVICEACCOUNTS
+alertmanager-main                                                           ClusterRole/alertmanager-main                                                           404d                                                                                                                    openshift-monitoring/alertmanager-main
+argo-binding                                                                ClusterRole/argo-cluster-role                                                           266d                                                                                                                    redhat-ods-applications/argo
+basic-users                                                                 ClusterRole/basic-user                                                                  404d                                                                     system:authenticated                           
+cloud-controller-manager                                                    ClusterRole/cloud-controller-manager                                                    404d                                                                                                                    openshift-cloud-controller-manager/cloud-controller-manager
+cloud-credential-operator-rolebinding                                       ClusterRole/cloud-credential-operator-role                                              404d                                                                                                                    openshift-cloud-credential-operator/cloud-credential-operator
+cloud-node-manager                                                          ClusterRole/cloud-node-manager                                                          404d                                                                                                                    openshift-cloud-controller-manager/cloud-node-manager
+cluster-admin                                                               ClusterRole/cluster-admin                                                               404d                                                                     system:masters                                 
+cluster-admin-0                                                             ClusterRole/cluster-admin                                                               404d    admin                                                                                                           
+cluster-admin-1                                                             ClusterRole/cluster-admin                                                               3m38s   bernard                                                                                                         
+cluster-admin-2                                                             ClusterRole/cluster-admin                                                               3m9s    jbells                                                                                                          
+cluster-admins                                                              ClusterRole/cluster-admin                                                               404d    system:admin                                                     system:cluster-admins                          
+cluster-autoscaler                                                          ClusterRole/cluster-autoscaler                                                          404d                                                                                                                    openshift-machine-api/cluster-autoscaler
+cluster-autoscaler-operator                                                 ClusterRole/cluster-autoscaler-operator                                                 404d                                                                                                                    openshift-machine-api/cluster-autoscaler-operator
+cluster-baremetal-operator                                                  ClusterRole/cluster-baremetal-operator                                                  404d                                                                                                                    openshift-machine-api/cluster-baremetal-operator
+cluster-monitoring-operator                                                 ClusterRole/cluster-monitoring-operator                                                 404d                                                                                                                    openshift-monitoring/cluster-monitoring-operator
+cluster-network-operator                                                    ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-network-operator/cluster-network-operator
+cluster-node-tuning-operator                                                ClusterRole/cluster-node-tuning-operator                                                404d                                                                                                                    openshift-cluster-node-tuning-operator/cluster-node-tuning-operator
+cluster-node-tuning:tuned                                                   ClusterRole/cluster-node-tuning:tuned                                                   404d                                                                                                                    openshift-cluster-node-tuning-operator/tuned
+cluster-readers                                                             ClusterRole/cluster-reader                                                              404d                                                                     system:cluster-readers                         
+cluster-samples-operator                                                    ClusterRole/cluster-samples-operator                                                    404d                                                                                                                    openshift-cluster-samples-operator/cluster-samples-operator
+cluster-samples-operator-imageconfig-reader                                 ClusterRole/cluster-samples-operator-imageconfig-reader                                 404d                                                                                                                    openshift-cluster-samples-operator/cluster-samples-operator
+cluster-samples-operator-proxy-reader                                       ClusterRole/cluster-samples-operator-proxy-reader                                       404d                                                                                                                    openshift-cluster-samples-operator/cluster-samples-operator
+cluster-status-binding                                                      ClusterRole/cluster-status                                                              404d                                                                     system:authenticated                           
+cluster-storage-operator-role                                               ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-cluster-storage-operator/cluster-storage-operator
+cluster-version-operator                                                    ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-cluster-version/default
+console                                                                     ClusterRole/console                                                                     404d                                                                                                                    openshift-console/console
+console-auth-delegator                                                      ClusterRole/system:auth-delegator                                                       404d                                                                                                                    openshift-console/console
+console-extensions-reader                                                   ClusterRole/console-extensions-reader                                                   404d                                                                     system:authenticated                           
+console-operator                                                            ClusterRole/console-operator                                                            404d                                                                                                                    openshift-console-operator/console-operator
+console-operator-auth-delegator                                             ClusterRole/system:auth-delegator                                                       404d                                                                                                                    openshift-console-operator/console-operator
+control-plane-machine-set-operator                                          ClusterRole/control-plane-machine-set-operator                                          404d                                                                                                                    openshift-machine-api/control-plane-machine-set-operator
+csi-snapshot-controller-operator-clusterrole                                ClusterRole/csi-snapshot-controller-operator-clusterrole                                404d                                                                                                                    openshift-cluster-storage-operator/csi-snapshot-controller-operator
+csi-snapshot-controller-runner-operator                                     ClusterRole/openshift-csi-snapshot-controller-runner                                    404d                                                                                                                    openshift-cluster-storage-operator/csi-snapshot-controller-operator
+csi-snapshot-webhook-clusterrolebinding                                     ClusterRole/csi-snapshot-webhook-clusterrole                                            404d                                                                                                                    openshift-cluster-storage-operator/csi-snapshot-webhook
+custom-account-openshift-machine-config-operator                            ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-machine-config-operator/machine-config-operator
+data-science-pipelines-operator-manager-argo-rolebinding                    ClusterRole/data-science-pipelines-operator-manager-argo-role                           266d                                                                                                                    redhat-ods-applications/data-science-pipelines-operator-controller-manager
+data-science-pipelines-operator-manager-rolebinding                         ClusterRole/data-science-pipelines-operator-manager-role                                266d                                                                                                                    redhat-ods-applications/data-science-pipelines-operator-controller-manager
+default-account-cluster-image-registry-operator                             ClusterRole/cluster-image-registry-operator                                             404d                                                                                                                    openshift-image-registry/cluster-image-registry-operator
+dns-monitoring                                                              ClusterRole/dns-monitoring                                                              404d                                                                                                                    openshift-monitoring/prometheus-k8s
+etcd-clusterrolebinding                                                     ClusterRole/etcd-role                                                                   266d                                                                                                                    redhat-ods-applications/etcd-serviceaccount
+helm-chartrepos-view                                                        ClusterRole/helm-chartrepos-viewer                                                      404d                                                                     system:authenticated                           
+insights-operator                                                           ClusterRole/insights-operator                                                           404d                                                                                                                    openshift-insights/operator
+insights-operator-auth                                                      ClusterRole/system:auth-delegator                                                       404d                                                                                                                    openshift-insights/operator
+insights-operator-gather                                                    ClusterRole/insights-operator-gather                                                    404d                                                                                                                    openshift-insights/gather
+insights-operator-gather-reader                                             ClusterRole/cluster-reader                                                              404d                                                                                                                    openshift-insights/gather
+istio-operator-service-system:auth-delegator                                ClusterRole/system:auth-delegator                                                       266d                                                                                                                    openshift-operators/istio-operator
+istiod-internal-data-science-smcp-istio-system                              ClusterRole/istiod-internal-data-science-smcp-istio-system                              266d                                                                                                                    istio-system/istiod-data-science-smcp
+knative-openshift-service-system:auth-delegator                             ClusterRole/system:auth-delegator                                                       266d                                                                                                                    openshift-serverless/knative-openshift
+knative-operator-webhook-service-system:auth-delegator                      ClusterRole/system:auth-delegator                                                       266d                                                                                                                    openshift-serverless/knative-operator
+knative-serving-activator-cluster                                           ClusterRole/knative-serving-activator-cluster                                           266d                                                                                                                    knative-serving/activator
+knative-serving-controller-addressable-resolver                             ClusterRole/knative-serving-aggregated-addressable-resolver                             266d                                                                                                                    knative-serving/controller
+knative-serving-controller-admin                                            ClusterRole/knative-serving-admin                                                       266d                                                                                                                    knative-serving/controller
+kserve-manager-rolebinding                                                  ClusterRole/kserve-manager-role                                                         266d                                                                                                                    redhat-ods-applications/kserve-controller-manager
+kserve-proxy-rolebinding                                                    ClusterRole/kserve-proxy-role                                                           266d                                                                                                                    redhat-ods-applications/kserve-controller-manager
+kube-apiserver                                                              ClusterRole/kube-apiserver                                                              404d    kube-apiserver, system:kube-apiserver                                                                           
+kube-state-metrics                                                          ClusterRole/kube-state-metrics                                                          404d                                                                                                                    openshift-monitoring/kube-state-metrics
+machine-api-controllers                                                     ClusterRole/machine-api-controllers                                                     404d                                                                                                                    openshift-machine-api/machine-api-controllers
+machine-api-controllers-baremetal                                           ClusterRole/machine-api-controllers-metal3-remediation                                  404d                                                                                                                    openshift-machine-api/machine-api-controllers
+machine-api-operator                                                        ClusterRole/machine-api-operator                                                        404d                                                                                                                    openshift-machine-api/machine-api-operator
+machine-api-operator-ext-remediation                                        ClusterRole/machine-api-operator-ext-remediation                                        404d                                                                                                                    openshift-machine-api/machine-api-controllers
+machine-config-controller                                                   ClusterRole/machine-config-controller                                                   404d                                                                                                                    openshift-machine-config-operator/machine-config-controller
+machine-config-daemon                                                       ClusterRole/machine-config-daemon                                                       404d                                                                                                                    openshift-machine-config-operator/machine-config-daemon
+machine-config-server                                                       ClusterRole/machine-config-server                                                       404d                                                                                                                    openshift-machine-config-operator/machine-config-server
+machine-os-builder                                                          ClusterRole/machine-os-builder                                                          404d                                                                                                                    openshift-machine-config-operator/machine-os-builder
+machine-os-builder-anyuid                                                   ClusterRole/system:openshift:scc:anyuid                                                 404d                                                                                                                    openshift-machine-config-operator/machine-os-builder
+marketplace-operator                                                        ClusterRole/marketplace-operator                                                        404d                                                                                                                    openshift-marketplace/marketplace-operator
+metrics-daemon-sa-rolebinding                                               ClusterRole/metrics-daemon-role                                                         404d                                                                                                                    openshift-multus/metrics-daemon-sa
+metrics-server:system:auth-delegator                                        ClusterRole/system:auth-delegator                                                       404d                                                                                                                    openshift-monitoring/metrics-server
+modelmesh-controller-rolebinding                                            ClusterRole/modelmesh-controller-role                                                   266d                                                                                                                    redhat-ods-applications/modelmesh-controller
+multus-admission-controller-webhook                                         ClusterRole/multus-admission-controller-webhook                                         404d                                                                                                                    openshift-multus/multus-ac
+multus-ancillary-tools                                                      ClusterRole/multus-ancillary-tools                                                      404d                                                                                                                    openshift-multus/multus-ancillary-tools
+multus-cluster-readers                                                      ClusterRole/multus-ancillary-tools                                                      404d                                                                     system:cluster-readers                         
+multus-group                                                                ClusterRole/multus                                                                      404d                                                                     system:multus                                  
+multus-transient                                                            ClusterRole/multus-ancillary-tools                                                      404d                                                                                                                    openshift-multus/multus
+multus-whereabouts                                                          ClusterRole/whereabouts-cni                                                             404d                                                                                                                    openshift-multus/multus-ancillary-tools
+network-diagnostics                                                         ClusterRole/network-diagnostics                                                         404d                                                                                                                    openshift-network-diagnostics/network-diagnostics
+network-node-identity                                                       ClusterRole/network-node-identity                                                       404d                                                                                                                    openshift-network-node-identity/network-node-identity
+node-exporter                                                               ClusterRole/node-exporter                                                               404d                                                                                                                    openshift-monitoring/node-exporter
+notebook-controller-role-binding                                            ClusterRole/notebook-controller-role                                                    266d                                                                                                                    redhat-ods-applications/notebook-controller-service-account
+odh-model-controller-rolebinding-opendatahub                                ClusterRole/odh-model-controller-role                                                   266d                                                                                                                    redhat-ods-applications/odh-model-controller
+odh-notebook-controller-manager-rolebinding                                 ClusterRole/odh-notebook-controller-manager-role                                        266d                                                                                                                    redhat-ods-applications/odh-notebook-controller-manager
+olm-operator-binding-openshift-operator-lifecycle-manager                   ClusterRole/system:controller:operator-lifecycle-manager                                404d                                                                                                                    openshift-operator-lifecycle-manager/olm-operator-serviceaccount
+openshift-csi-snapshot-controller-role                                      ClusterRole/openshift-csi-snapshot-controller-runner                                    404d                                                                                                                    openshift-cluster-storage-operator/csi-snapshot-controller
+openshift-dns                                                               ClusterRole/openshift-dns                                                               404d                                                                                                                    openshift-dns/dns
+openshift-dns-operator                                                      ClusterRole/openshift-dns-operator                                                      404d                                                                                                                    openshift-dns-operator/dns-operator
+openshift-image-registry-pruner                                             ClusterRole/system:image-pruner                                                         404d                                                                                                                    openshift-image-registry/pruner
+openshift-ingress-operator                                                  ClusterRole/openshift-ingress-operator                                                  404d                                                                                                                    openshift-ingress-operator/ingress-operator
+openshift-ingress-router                                                    ClusterRole/openshift-ingress-router                                                    404d                                                                                                                    openshift-ingress/router
+openshift-iptables-alerter                                                  ClusterRole/openshift-iptables-alerter                                                  404d                                                                                                                    openshift-network-operator/iptables-alerter
+openshift-ovn-kubernetes-control-plane-limited                              ClusterRole/openshift-ovn-kubernetes-control-plane-limited                              404d                                                                                                                    openshift-ovn-kubernetes/ovn-kubernetes-control-plane
+openshift-ovn-kubernetes-node-identity-limited                              ClusterRole/openshift-ovn-kubernetes-node-limited                                       404d                                                                     system:ovn-nodes                               
+openshift-ovn-kubernetes-node-kube-rbac-proxy                               ClusterRole/openshift-ovn-kubernetes-kube-rbac-proxy                                    404d                                                                                                                    openshift-ovn-kubernetes/ovn-kubernetes-node
+openshift-pipelines-clusterinterceptors                                     ClusterRole/openshift-pipelines-clusterinterceptors                                     266d                                                                                                                    default/pipeline, minio/pipeline, nfs-client-provisioner/pipeline, openshift/pipeline, knative-eventing/pipeline, knative-serving/pipeline, redhat-ods-operator/pipeline, redhat-ods-applications/pipeline, redhat-ods-monitoring/pipeline, istio-system/pipeline, rhods-notebooks/pipeline, gowri-ds-project/pipeline, researchteam/pipeline
+openshift-pipelines-oper-9BHD8qJPqlzDH8GyVEL97SXH3lRxnwtE0iPJcW             ClusterRole/openshift-pipelines-oper-9BHD8qJPqlzDH8GyVEL97SXH3lRxnwtE0iPJcW             266d                                                                                                                    openshift-operators/openshift-pipelines-operator
+openshift-pipelines-permission                                              ClusterRole/pipelines-scc-role                                                          266d                                                                                                                    openshift-pipelines/tekton-pipelines-controller
+openshift-state-metrics                                                     ClusterRole/openshift-state-metrics                                                     404d                                                                                                                    openshift-monitoring/openshift-state-metrics
+openstack-cloud-controller-manager                                          ClusterRole/openstack-cloud-controller-manager                                          404d                                                                                                                    kube-system/cloud-controller-manager
+ossm-cni                                                                    ClusterRole/ossm-cni                                                                    266d                                                                                                                    openshift-operators/ossm-cni
+packageserver-service-system:auth-delegator                                 ClusterRole/system:auth-delegator                                                       404d                                                                                                                    openshift-operator-lifecycle-manager/olm-operator-serviceaccount
+pipelines-as-code-controller-clusterbinding                                 ClusterRole/pipeline-as-code-controller-clusterrole                                     266d                                                                                                                    openshift-pipelines/pipelines-as-code-controller
+pipelines-as-code-watcher-clusterbinding                                    ClusterRole/pipeline-as-code-watcher-clusterrole                                        266d                                                                                                                    openshift-pipelines/pipelines-as-code-watcher
+pipelines-as-code-webhook-clusterbinding                                    ClusterRole/pipeline-as-code-webhook-clusterrole                                        266d                                                                                                                    openshift-pipelines/pipelines-as-code-webhook
+prometheus-k8s                                                              ClusterRole/prometheus-k8s                                                              404d                                                                                                                    openshift-monitoring/prometheus-k8s
+prometheus-k8s-scheduler-resources                                          ClusterRole/prometheus-k8s-scheduler-resources                                          404d                                                                                                                    openshift-monitoring/prometheus-k8s
+prometheus-k8s-viewer                                                       ClusterRole/prometheus-k8s-viewer                                                       266d                                                                                                                    openshift-monitoring/prometheus-k8s
+prometheus-operator                                                         ClusterRole/prometheus-operator                                                         404d                                                                                                                    openshift-monitoring/prometheus-operator
+proxy-rolebinding                                                           ClusterRole/proxy-role                                                                  266d                                                                                                                    redhat-ods-applications/odh-model-controller
+rbac-proxy-metrics-prom-rb                                                  ClusterRole/rbac-proxy-metrics-prom                                                     266d                                                                                                                    openshift-monitoring/prometheus-k8s
+rbac-proxy-reviews-prom-rb-activator                                        ClusterRole/rbac-proxy-reviews-prom                                                     266d                                                                                                                    knative-serving/activator
+rbac-proxy-reviews-prom-rb-controller                                       ClusterRole/rbac-proxy-reviews-prom                                                     266d                                                                                                                    knative-serving/controller
+registry-monitoring                                                         ClusterRole/registry-monitoring                                                         404d                                                                                                                    openshift-monitoring/prometheus-k8s
+registry-registry-role                                                      ClusterRole/system:registry                                                             404d                                                                                                                    openshift-image-registry/registry
+rhods-dashboard                                                             ClusterRole/rhods-dashboard                                                             266d                                                                                                                    redhat-ods-applications/rhods-dashboard
+rhods-dashboard-auth-delegator                                              ClusterRole/system:auth-delegator                                                       266d                                                                                                                    redhat-ods-applications/rhods-dashboard
+rhods-dashboard-monitoring                                                  ClusterRole/cluster-monitoring-view                                                     266d                                                                                                                    redhat-ods-applications/rhods-dashboard
+rhods-operator.2.13.1-4lNqhLu5jQkiTRpmaLMrguhY8khY3V0WOWPIzf                ClusterRole/rhods-operator.2.13.1-4lNqhLu5jQkiTRpmaLMrguhY8khY3V0WOWPIzf                266d                                                                                                                    redhat-ods-operator/redhat-ods-operator-controller-manager
+router-monitoring                                                           ClusterRole/router-monitoring                                                           404d                                                                                                                    openshift-monitoring/prometheus-k8s
+run-nfs-client-provisioner                                                  ClusterRole/nfs-client-provisioner-runner                                               404d                                                                                                                    nfs-client-provisioner/nfs-client-provisioner
+self-access-reviewers                                                       ClusterRole/self-access-reviewer                                                        404d                                                                     system:authenticated                           
+self-provisioners                                                           ClusterRole/self-provisioner                                                            404d                                                                     system:authenticated:oauth                     
+serverless-operator.v1.3-29y0VIC6kp9U6QDW1iEj266VTU71fWu0JwE8Z0             ClusterRole/serverless-operator.v1.3-29y0VIC6kp9U6QDW1iEj266VTU71fWu0JwE8Z0             266d                                                                                                                    openshift-serverless/knative-openshift-ingress
+serverless-operator.v1.3-5Dmwlz6xmRK7ZCohdcW5B2ASIMlbJ1rxMNUf7o             ClusterRole/serverless-operator.v1.3-5Dmwlz6xmRK7ZCohdcW5B2ASIMlbJ1rxMNUf7o             266d                                                                                                                    openshift-serverless/knative-openshift
+serverless-operator.v1.3-bgDzdghaTgqRJtymaHwjuOXn9y2a36dADdb1nW             ClusterRole/serverless-operator.v1.3-bgDzdghaTgqRJtymaHwjuOXn9y2a36dADdb1nW             266d                                                                                                                    openshift-serverless/knative-operator
+servicemeshoperator.v2.6-2ikqVElCJosm7UCIz5BKsBYtiAwX87henMaOFD             ClusterRole/servicemeshoperator.v2.6-2ikqVElCJosm7UCIz5BKsBYtiAwX87henMaOFD             266d                                                                                                                    openshift-operators/istio-operator
+storage-version-migration-migrator                                          ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-kube-storage-version-migrator/kube-storage-version-migrator-sa
+system-bootstrap-node-bootstrapper                                          ClusterRole/system:node-bootstrapper                                                    404d                                                                                                                    openshift-machine-config-operator/node-bootstrapper
+system-bootstrap-node-renewal                                               ClusterRole/system:certificates.k8s.io:certificatesigningrequests:selfnodeclient        404d                                                                     system:nodes                                   
+system:basic-user                                                           ClusterRole/system:basic-user                                                           404d                                                                     system:authenticated                           
+system:build-strategy-docker-binding                                        ClusterRole/system:build-strategy-docker                                                404d                                                                     system:authenticated                           
+system:build-strategy-jenkinspipeline-binding                               ClusterRole/system:build-strategy-jenkinspipeline                                       404d                                                                     system:authenticated                           
+system:build-strategy-source-binding                                        ClusterRole/system:build-strategy-source                                                404d                                                                     system:authenticated                           
+system:controller:attachdetach-controller                                   ClusterRole/system:controller:attachdetach-controller                                   404d                                                                                                                    kube-system/attachdetach-controller
+system:controller:certificate-controller                                    ClusterRole/system:controller:certificate-controller                                    404d                                                                                                                    kube-system/certificate-controller
+system:controller:clusterrole-aggregation-controller                        ClusterRole/system:controller:clusterrole-aggregation-controller                        404d                                                                                                                    kube-system/clusterrole-aggregation-controller
+system:controller:cronjob-controller                                        ClusterRole/system:controller:cronjob-controller                                        404d                                                                                                                    kube-system/cronjob-controller
+system:controller:daemon-set-controller                                     ClusterRole/system:controller:daemon-set-controller                                     404d                                                                                                                    kube-system/daemon-set-controller
+system:controller:deployment-controller                                     ClusterRole/system:controller:deployment-controller                                     404d                                                                                                                    kube-system/deployment-controller
+system:controller:disruption-controller                                     ClusterRole/system:controller:disruption-controller                                     404d                                                                                                                    kube-system/disruption-controller
+system:controller:endpoint-controller                                       ClusterRole/system:controller:endpoint-controller                                       404d                                                                                                                    kube-system/endpoint-controller
+system:controller:endpointslice-controller                                  ClusterRole/system:controller:endpointslice-controller                                  404d                                                                                                                    kube-system/endpointslice-controller
+system:controller:endpointslicemirroring-controller                         ClusterRole/system:controller:endpointslicemirroring-controller                         404d                                                                                                                    kube-system/endpointslicemirroring-controller
+system:controller:ephemeral-volume-controller                               ClusterRole/system:controller:ephemeral-volume-controller                               404d                                                                                                                    kube-system/ephemeral-volume-controller
+system:controller:expand-controller                                         ClusterRole/system:controller:expand-controller                                         404d                                                                                                                    kube-system/expand-controller
+system:controller:generic-garbage-collector                                 ClusterRole/system:controller:generic-garbage-collector                                 404d                                                                                                                    kube-system/generic-garbage-collector
+system:controller:horizontal-pod-autoscaler                                 ClusterRole/system:controller:horizontal-pod-autoscaler                                 404d                                                                                                                    kube-system/horizontal-pod-autoscaler, openshift-infra/horizontal-pod-autoscaler
+system:controller:job-controller                                            ClusterRole/system:controller:job-controller                                            404d                                                                                                                    kube-system/job-controller
+system:controller:legacy-service-account-token-cleaner                      ClusterRole/system:controller:legacy-service-account-token-cleaner                      404d                                                                                                                    kube-system/legacy-service-account-token-cleaner
+system:controller:namespace-controller                                      ClusterRole/system:controller:namespace-controller                                      404d                                                                                                                    kube-system/namespace-controller
+system:controller:node-controller                                           ClusterRole/system:controller:node-controller                                           404d                                                                                                                    kube-system/node-controller
+system:controller:persistent-volume-binder                                  ClusterRole/system:controller:persistent-volume-binder                                  404d                                                                                                                    kube-system/persistent-volume-binder
+system:controller:pod-garbage-collector                                     ClusterRole/system:controller:pod-garbage-collector                                     404d                                                                                                                    kube-system/pod-garbage-collector
+system:controller:pv-protection-controller                                  ClusterRole/system:controller:pv-protection-controller                                  404d                                                                                                                    kube-system/pv-protection-controller
+system:controller:pvc-protection-controller                                 ClusterRole/system:controller:pvc-protection-controller                                 404d                                                                                                                    kube-system/pvc-protection-controller
+system:controller:replicaset-controller                                     ClusterRole/system:controller:replicaset-controller                                     404d                                                                                                                    kube-system/replicaset-controller
+system:controller:replication-controller                                    ClusterRole/system:controller:replication-controller                                    404d                                                                                                                    kube-system/replication-controller
+system:controller:resourcequota-controller                                  ClusterRole/system:controller:resourcequota-controller                                  404d                                                                                                                    kube-system/resourcequota-controller
+system:controller:root-ca-cert-publisher                                    ClusterRole/system:controller:root-ca-cert-publisher                                    404d                                                                                                                    kube-system/root-ca-cert-publisher
+system:controller:route-controller                                          ClusterRole/system:controller:route-controller                                          404d                                                                                                                    kube-system/route-controller
+system:controller:service-account-controller                                ClusterRole/system:controller:service-account-controller                                404d                                                                                                                    kube-system/service-account-controller
+system:controller:service-ca-cert-publisher                                 ClusterRole/system:controller:service-ca-cert-publisher                                 404d                                                                                                                    kube-system/service-ca-cert-publisher
+system:controller:service-controller                                        ClusterRole/system:controller:service-controller                                        404d                                                                                                                    kube-system/service-controller
+system:controller:statefulset-controller                                    ClusterRole/system:controller:statefulset-controller                                    404d                                                                                                                    kube-system/statefulset-controller
+system:controller:ttl-after-finished-controller                             ClusterRole/system:controller:ttl-after-finished-controller                             404d                                                                                                                    kube-system/ttl-after-finished-controller
+system:controller:ttl-controller                                            ClusterRole/system:controller:ttl-controller                                            404d                                                                                                                    kube-system/ttl-controller
+system:deployer                                                             ClusterRole/system:deployer                                                             404d                                                                                                                    openshift-infra/default-rolebindings-controller
+system:discovery                                                            ClusterRole/system:discovery                                                            404d                                                                     system:authenticated                           
+system:image-builder                                                        ClusterRole/system:image-builder                                                        404d                                                                                                                    openshift-infra/default-rolebindings-controller
+system:image-puller                                                         ClusterRole/system:image-puller                                                         404d                                                                                                                    openshift-infra/default-rolebindings-controller
+system:kube-controller-manager                                              ClusterRole/system:kube-controller-manager                                              404d    system:kube-controller-manager                                                                                  
+system:kube-dns                                                             ClusterRole/system:kube-dns                                                             404d                                                                                                                    kube-system/kube-dns
+system:kube-scheduler                                                       ClusterRole/system:kube-scheduler                                                       404d    system:kube-scheduler                                                                                           
+system:masters                                                              ClusterRole/system:master                                                               404d                                                                     system:masters                                 
+system:metrics-server                                                       ClusterRole/system:metrics-server                                                       404d                                                                                                                    openshift-monitoring/metrics-server
+system:monitoring                                                           ClusterRole/system:monitoring                                                           404d                                                                     system:monitoring                              
+system:node                                                                 ClusterRole/system:node                                                                 404d                                                                                                                    
+system:node-admin                                                           ClusterRole/system:node-admin                                                           404d    system:master, system:kube-apiserver                             system:node-admins                             
+system:node-admins                                                          ClusterRole/system:node-admin                                                           404d    system:master                                                    system:node-admins                             
+system:node-bootstrapper                                                    ClusterRole/system:node-bootstrapper                                                    404d                                                                                                                    openshift-infra/node-bootstrapper
+system:node-proxier                                                         ClusterRole/system:node-proxier                                                         404d    system:kube-proxy                                                                                               
+system:node-proxiers                                                        ClusterRole/system:node-proxier                                                         404d                                                                     system:nodes                                   
+system:oauth-token-deleters                                                 ClusterRole/system:oauth-token-deleter                                                  404d                                                                     system:authenticated                           
+system:openshift:controller:build-config-change-controller                  ClusterRole/system:openshift:controller:build-config-change-controller                  404d                                                                                                                    openshift-infra/build-config-change-controller
+system:openshift:controller:build-controller                                ClusterRole/system:openshift:controller:build-controller                                404d                                                                                                                    openshift-infra/build-controller
+system:openshift:controller:cluster-csr-approver-controller                 ClusterRole/system:openshift:controller:cluster-csr-approver-controller                 404d                                                                                                                    openshift-infra/cluster-csr-approver-controller
+system:openshift:controller:cluster-quota-reconciliation-controller         ClusterRole/system:openshift:controller:cluster-quota-reconciliation-controller         404d                                                                                                                    openshift-infra/cluster-quota-reconciliation-controller
+system:openshift:controller:default-rolebindings-controller                 ClusterRole/system:openshift:controller:default-rolebindings-controller                 404d                                                                                                                    openshift-infra/default-rolebindings-controller
+system:openshift:controller:deployer-controller                             ClusterRole/system:openshift:controller:deployer-controller                             404d                                                                                                                    openshift-infra/deployer-controller
+system:openshift:controller:deploymentconfig-controller                     ClusterRole/system:openshift:controller:deploymentconfig-controller                     404d                                                                                                                    openshift-infra/deploymentconfig-controller
+system:openshift:controller:horizontal-pod-autoscaler                       ClusterRole/system:openshift:controller:horizontal-pod-autoscaler                       404d                                                                                                                    openshift-infra/horizontal-pod-autoscaler
+system:openshift:controller:image-import-controller                         ClusterRole/system:openshift:controller:image-import-controller                         404d                                                                                                                    openshift-infra/image-import-controller
+system:openshift:controller:image-trigger-controller                        ClusterRole/system:openshift:controller:image-trigger-controller                        404d                                                                                                                    openshift-infra/image-trigger-controller
+system:openshift:controller:kube-apiserver-check-endpoints-auth-delegator   ClusterRole/system:auth-delegator                                                       404d    system:serviceaccount:openshift-kube-apiserver:check-endpoints                                                  
+system:openshift:controller:kube-apiserver-check-endpoints-crd-reader       ClusterRole/system:openshift:controller:check-endpoints-crd-reader                      404d    system:serviceaccount:openshift-kube-apiserver:check-endpoints                                                  
+system:openshift:controller:kube-apiserver-check-endpoints-node-reader      ClusterRole/system:openshift:controller:check-endpoints-node-reader                     404d    system:serviceaccount:openshift-kube-apiserver:check-endpoints                                                  
+system:openshift:controller:machine-approver                                ClusterRole/system:openshift:controller:machine-approver                                404d                                                                                                                    openshift-cluster-machine-approver/machine-approver-sa
+system:openshift:controller:namespace-security-allocation-controller        ClusterRole/system:openshift:controller:namespace-security-allocation-controller        404d                                                                                                                    openshift-infra/namespace-security-allocation-controller
+system:openshift:controller:origin-namespace-controller                     ClusterRole/system:openshift:controller:origin-namespace-controller                     404d                                                                                                                    openshift-infra/origin-namespace-controller
+system:openshift:controller:podsecurity-admission-label-syncer-controller   ClusterRole/system:openshift:controller:podsecurity-admission-label-syncer-controller   404d                                                                                                                    openshift-infra/podsecurity-admission-label-syncer-controller
+system:openshift:controller:privileged-namespaces-psa-label-syncer          ClusterRole/system:openshift:controller:privileged-namespaces-psa-label-syncer          404d                                                                                                                    openshift-infra/privileged-namespaces-psa-label-syncer
+system:openshift:controller:pv-recycler-controller                          ClusterRole/system:openshift:controller:pv-recycler-controller                          404d                                                                                                                    openshift-infra/pv-recycler-controller
+system:openshift:controller:resourcequota-controller                        ClusterRole/system:openshift:controller:resourcequota-controller                        404d                                                                                                                    openshift-infra/resourcequota-controller
+system:openshift:controller:service-ca                                      ClusterRole/system:openshift:controller:service-ca                                      404d                                                                                                                    openshift-service-ca/service-ca
+system:openshift:controller:service-ingress-ip-controller                   ClusterRole/system:openshift:controller:service-ingress-ip-controller                   404d                                                                                                                    openshift-infra/service-ingress-ip-controller
+system:openshift:controller:serviceaccount-controller                       ClusterRole/system:openshift:controller:serviceaccount-controller                       404d                                                                                                                    openshift-infra/serviceaccount-controller
+system:openshift:controller:serviceaccount-pull-secrets-controller          ClusterRole/system:openshift:controller:serviceaccount-pull-secrets-controller          404d                                                                                                                    openshift-infra/serviceaccount-pull-secrets-controller
+system:openshift:controller:template-instance-controller                    ClusterRole/system:openshift:controller:template-instance-controller                    404d                                                                                                                    openshift-infra/template-instance-controller
+system:openshift:controller:template-instance-controller:admin              ClusterRole/admin                                                                       404d                                                                                                                    openshift-infra/template-instance-controller
+system:openshift:controller:template-instance-finalizer-controller          ClusterRole/system:openshift:controller:template-instance-finalizer-controller          404d                                                                                                                    openshift-infra/template-instance-finalizer-controller
+system:openshift:controller:template-instance-finalizer-controller:admin    ClusterRole/admin                                                                       404d                                                                                                                    openshift-infra/template-instance-finalizer-controller
+system:openshift:controller:template-service-broker                         ClusterRole/system:openshift:controller:template-service-broker                         404d                                                                                                                    openshift-infra/template-service-broker
+system:openshift:controller:unidling-controller                             ClusterRole/system:openshift:controller:unidling-controller                             404d                                                                                                                    openshift-infra/unidling-controller
+system:openshift:discovery                                                  ClusterRole/system:openshift:discovery                                                  404d                                                                     system:authenticated                           
+system:openshift:oauth-apiserver                                            ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-oauth-apiserver/oauth-apiserver-sa
+system:openshift:openshift-apiserver                                        ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-apiserver/openshift-apiserver-sa
+system:openshift:openshift-authentication                                   ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-authentication/oauth-openshift
+system:openshift:openshift-controller-manager                               ClusterRole/system:openshift:openshift-controller-manager                               404d                                                                                                                    openshift-controller-manager/openshift-controller-manager-sa
+system:openshift:openshift-controller-manager:image-trigger-controller      ClusterRole/system:openshift:openshift-controller-manager:image-trigger-controller      404d                                                                                                                    openshift-infra/image-trigger-controller
+system:openshift:openshift-controller-manager:ingress-to-route-controller   ClusterRole/system:openshift:openshift-controller-manager:ingress-to-route-controller   404d                                                                                                                    openshift-infra/ingress-to-route-controller
+system:openshift:openshift-controller-manager:update-buildconfig-status     ClusterRole/system:openshift:openshift-controller-manager:update-buildconfig-status     404d                                                                                                                    openshift-controller-manager/openshift-controller-manager-sa, openshift-infra/build-config-change-controller
+system:openshift:openshift-route-controller-manager                         ClusterRole/system:openshift:openshift-route-controller-manager                         404d                                                                                                                    openshift-route-controller-manager/route-controller-manager-sa
+system:openshift:operator:authentication                                    ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-authentication-operator/authentication-operator
+system:openshift:operator:cloud-controller-manager                          ClusterRole/system:openshift:operator:cloud-controller-manager                          404d                                                                                                                    openshift-cloud-controller-manager-operator/cluster-cloud-controller-manager
+system:openshift:operator:cluster-kube-scheduler-operator                   ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-kube-scheduler-operator/openshift-kube-scheduler-operator
+system:openshift:operator:etcd-backup-crb                                   ClusterRole/system:openshift:operator:etcd-backup-role                                  404d                                                                                                                    openshift-etcd/etcd-backup-sa
+system:openshift:operator:etcd-operator                                     ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-etcd-operator/etcd-operator
+system:openshift:operator:kube-apiserver-operator                           ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-kube-apiserver-operator/kube-apiserver-operator
+system:openshift:operator:kube-apiserver-recovery                           ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-kube-apiserver/localhost-recovery-client
+system:openshift:operator:kube-controller-manager-operator                  ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-kube-controller-manager-operator/kube-controller-manager-operator
+system:openshift:operator:kube-controller-manager-recovery                  ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-kube-controller-manager/localhost-recovery-client
+system:openshift:operator:kube-scheduler-recovery                           ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-kube-scheduler/localhost-recovery-client
+system:openshift:operator:kube-scheduler:public-2                           ClusterRole/system:kube-scheduler                                                       404d                                                                                                                    openshift-kube-scheduler/openshift-kube-scheduler-sa
+system:openshift:operator:kube-storage-version-migrator-operator            ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-kube-storage-version-migrator-operator/kube-storage-version-migrator-operator
+system:openshift:operator:openshift-apiserver-operator                      ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-apiserver-operator/openshift-apiserver-operator
+system:openshift:operator:openshift-config-operator                         ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-config-operator/openshift-config-operator
+system:openshift:operator:openshift-controller-manager-operator             ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-controller-manager-operator/openshift-controller-manager-operator
+system:openshift:operator:openshift-etcd-installer                          ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-etcd/installer-sa
+system:openshift:operator:openshift-kube-apiserver-installer                ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-kube-apiserver/installer-sa
+system:openshift:operator:openshift-kube-controller-manager-installer       ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-kube-controller-manager/installer-sa
+system:openshift:operator:openshift-kube-scheduler-installer                ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-kube-scheduler/installer-sa
+system:openshift:operator:service-ca-operator                               ClusterRole/cluster-admin                                                               404d                                                                                                                    openshift-service-ca-operator/service-ca-operator
+system:openshift:public-info-viewer                                         ClusterRole/system:openshift:public-info-viewer                                         404d                                                                     system:authenticated, system:unauthenticated   
+system:openshift:scc:hostmount-anyuid                                       ClusterRole/system:openshift:scc:hostmount-anyuid                                       404d                                                                                                                    nfs-client-provisioner/nfs-client-provisioner
+system:openshift:scc:restricted-v2                                          ClusterRole/system:openshift:scc:restricted-v2                                          404d                                                                     system:authenticated                           
+system:openshift:tokenreview-openshift-controller-manager                   ClusterRole/system:openshift:tokenreview-openshift-controller-manager                   404d                                                                                                                    openshift-controller-manager/openshift-controller-manager-sa
+system:openshift:tokenreview-openshift-route-controller-manager             ClusterRole/system:openshift:tokenreview-openshift-route-controller-manager             404d                                                                                                                    openshift-route-controller-manager/route-controller-manager-sa
+system:openshift:useroauthaccesstoken-manager                               ClusterRole/system:openshift:useroauthaccesstoken-manager                               404d                                                                     system:authenticated:oauth                     
+system:public-info-viewer                                                   ClusterRole/system:public-info-viewer                                                   404d                                                                     system:authenticated, system:unauthenticated   
+system:scope-impersonation                                                  ClusterRole/system:scope-impersonation                                                  404d                                                                     system:authenticated                           
+system:sdn-readers                                                          ClusterRole/system:sdn-reader                                                           404d                                                                     system:nodes                                   
+system:service-account-issuer-discovery                                     ClusterRole/system:service-account-issuer-discovery                                     404d                                                                     system:serviceaccounts                         
+system:volume-scheduler                                                     ClusterRole/system:volume-scheduler                                                     404d    system:kube-scheduler                                                                                           
+system:webhooks                                                             ClusterRole/system:webhook                                                              404d                                                                     system:authenticated                           
+tekton-chains-controller-cluster-access                                     ClusterRole/tekton-chains-controller-cluster-access                                     266d                                                                                                                    openshift-pipelines/tekton-chains-controller
+tekton-chains-controller-tenant-access                                      ClusterRole/tekton-chains-controller-tenant-access                                      266d                                                                                                                    openshift-pipelines/tekton-chains-controller
+tekton-clustertasks-view-rolebinding-all-users                              ClusterRole/tekton-clustertasks-view-role                                               266d                                                                     system:authenticated                           
+tekton-clustertriggerbindings-view-rolebinding-all-users                    ClusterRole/tekton-clustertriggerbindings-view-role                                     266d                                                                     system:authenticated                           
+tekton-config-read-rolebinding                                              ClusterRole/tekton-config-read-role                                                     266d                                                                     system:authenticated                           
+tekton-events-controller-cluster-access                                     ClusterRole/tekton-events-controller-cluster-access                                     266d                                                                                                                    openshift-pipelines/tekton-events-controller
+tekton-operators-proxy-webhook-admin                                        ClusterRole/tekton-operators-proxy-admin                                                266d                                                                                                                    openshift-pipelines/tekton-operators-proxy-webhook
+tekton-pipelines-controller-cluster-access                                  ClusterRole/tekton-pipelines-controller-cluster-access                                  266d                                                                                                                    openshift-pipelines/tekton-pipelines-controller
+tekton-pipelines-controller-tenant-access                                   ClusterRole/tekton-pipelines-controller-tenant-access                                   266d                                                                                                                    openshift-pipelines/tekton-pipelines-controller
+tekton-pipelines-resolvers                                                  ClusterRole/tekton-pipelines-resolvers-resolution-request-updates                       266d                                                                                                                    openshift-pipelines/tekton-pipelines-resolvers
+tekton-pipelines-webhook-cluster-access                                     ClusterRole/tekton-pipelines-webhook-cluster-access                                     266d                                                                                                                    openshift-pipelines/tekton-pipelines-webhook
+tekton-resource-pruner                                                      ClusterRole/tekton-resource-pruner                                                      266d                                                                                                                    openshift-pipelines/tekton-resource-pruner
+tekton-result-read-rolebinding                                              ClusterRole/tekton-result-read-role                                                     266d                                                                     system:authenticated                           
+tekton-triggers-controller-admin                                            ClusterRole/tekton-triggers-admin                                                       266d                                                                                                                    openshift-pipelines/tekton-triggers-controller
+tekton-triggers-core-interceptors                                           ClusterRole/tekton-triggers-core-interceptors                                           266d                                                                                                                    openshift-pipelines/tekton-triggers-core-interceptors
+tekton-triggers-core-interceptors-secrets                                   ClusterRole/tekton-triggers-core-interceptors-secrets                                   266d                                                                                                                    openshift-pipelines/tekton-triggers-core-interceptors
+tekton-triggers-webhook-admin                                               ClusterRole/tekton-triggers-admin                                                       266d                                                                                                                    openshift-pipelines/tekton-triggers-webhook
+thanos-querier                                                              ClusterRole/thanos-querier                                                              404d                                                                                                                    openshift-monitoring/thanos-querier
+trustyai-service-operator-manager-rolebinding                               ClusterRole/trustyai-service-operator-manager-role                                      266d                                                                                                                    redhat-ods-applications/trustyai-service-operator-controller-manager
+trustyai-service-operator-proxy-rolebinding                                 ClusterRole/trustyai-service-operator-proxy-role                                        266d                                                                                                                    redhat-ods-applications/trustyai-service-operator-controller-manager
+[student@workstation ~]$ oc get clusterrolebindings -o wide | grep bernard
+cluster-admin-1                                                             ClusterRole/cluster-admin                                                               3m49s   bernard                                                                                                         
+[student@workstation ~]$ oc get clusterrolebindings -o wide | grep jbells
+cluster-admin-2                                                             ClusterRole/cluster-admin                                                               3m33s   jbells                                                                                                          
+[student@workstation ~]$ lab start -t AI265 customnotebook-create
+Uninstalling scripts for ai262...
+Installing scripts for ai265...
+Version lock is >=2.13,<2.14
+Lab scripts package "rht-labs-ai265>=2.13,<2.14" installed
+Could not find lab script 'customnotebook-create' in course 'ai265'.
+
+Use 'lab select COURSE' to switch to another course, or use a valid lab in ai265:
+
+	rhoaiserving-consuming
+	rhoaiserving-custom
+	rhoaiserving-using
+	serving-saving
+
+For more details, run: lab logs customnotebook-create
+[student@workstation ~]$ lab start 
+
+Usage: lab start [OPTIONS] SCRIPT
+Try 'lab start --help' for help.
+
+Error: Missing argument 'SCRIPT'.
+[student@workstation ~]$ 
+[student@workstation ~]$ lab start 
+rhoaiserving-consuming  rhoaiserving-using      
+rhoaiserving-custom     serving-saving          
+[student@workstation ~]$ lab start -t AI263 cutomnotebook-create
+Uninstalling scripts for ai265...
+Installing scripts for ai263...
+Version lock is >=2.13,<2.14
+Lab scripts package "rht-labs-ai263>=2.13,<2.14" installed
+Could not find lab script 'cutomnotebook-create' in course 'ai263'.
+
+Use 'lab select COURSE' to switch to another course, or use a valid lab in ai263:
+
+	customnotebook-create
+	intro-sample
+	manage-resources
+	manage-useraccess
+	rhoai-install
+
+For more details, run: lab logs cutomnotebook-create
+[student@workstation ~]$ lab start -t AI263 customnotebook-create
+SUCCESS Copying lab files to workspace
+SUCCESS Verifying cluster state
+SUCCESS Verifying OCP developer credentials
+SUCCESS Verifying OCP admin credentials
+SUCCESS Creating the customnotebook-create project
+        - Project 'customnotebook-create' created.
+[student@workstation ~]$ cd 
+.ansible/  .config/   .jupyter/  .mozilla/  .venv/     Documents/ Pictures/  Videos/
+.auth/     .grading/  .kube/     .npm/      AI263/     Downloads/ Public/    
+.cache/    .ipython/  .local/    .ssh/      Desktop/   Music/     Templates/ 
+[student@workstation ~]$ cd 
+.ansible/  .config/   .jupyter/  .mozilla/  .venv/     Documents/ Pictures/  Videos/
+.auth/     .grading/  .kube/     .npm/      AI263/     Downloads/ Public/    
+.cache/    .ipython/  .local/    .ssh/      Desktop/   Music/     Templates/ 
+[student@workstation ~]$ cd AI263/labs/customnotebook-create/
+[student@workstation customnotebook-create]$ ls
+Containerfile
+[student@workstation customnotebook-create]$ echo "seaborn==0.12.2" >> requirements.txt
+[student@workstation customnotebook-create]$ podman login registry.lab.example.com:8443
+Username: developer
+Password: 
+Error: authenticating creds for "registry.lab.example.com:8443": pinging container registry registry.lab.example.com:8443: Get "https://registry.lab.example.com:8443/v2/": dial tcp: lookup registry.lab.example.com on 172.25.250.254:53: no such host
+[student@workstation customnotebook-create]$ podman login registry.ocp4.example.com:8443
+Username: developer
+Password: 
+Login Succeeded!
+[student@workstation customnotebook-create]$ podman build . -t registry.ocp4.example.com:8443/student/custom-workbench:2024v1
+STEP 1/4: FROM registry.ocp4.example.com:8443/opendatahub/workbench-images:jupyter-datascience-ubi9-python-3.9-2023b-20240219-ffe72a0
+Trying to pull registry.ocp4.example.com:8443/opendatahub/workbench-images:jupyter-datascience-ubi9-python-3.9-2023b-20240219-ffe72a0...
+Getting image source signatures
+Copying blob 7fcbb355ddc0 done   | 
+Copying blob 8f575b3b5f34 done   | 
+Copying blob 1bd75c368cb5 done   | 
+Copying blob 9619aa272283 done   | 
+Copying blob 1f19e1686935 done   | 
+Copying blob fa1fa014a6fc done   | 
+Copying blob babccbde94a1 done   | 
+Copying config 769eda83a9 done   | 
+Writing manifest to image destination
+STEP 2/4: COPY requirements.txt ./
+--> 06920a0f44cc
+STEP 3/4: RUN echo "Installing softwares and packages" &&     pip install micropipenv &&     micropipenv install &&     rm -f ./requirements.txt
+Installing softwares and packages
+Requirement already satisfied: micropipenv in /opt/app-root/lib/python3.9/site-packages (1.6.0)
+Requirement already satisfied: pip>=9 in /opt/app-root/lib/python3.9/site-packages (from micropipenv) (22.2.2)
+
+[notice] A new release of pip available: 22.2.2 -> 25.3
+[notice] To update, run: pip install --upgrade pip
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!
+!!!		Provenance and integrity of installed packages cannot be checked!
+!!!
+!!!		The provided requirements.txt file is not fully locked as not all dependencies are
+!!!		pinned to specific versions with digests of artifacts to be installed.
+!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Collecting seaborn==0.12.2
+  Downloading seaborn-0.12.2-py3-none-any.whl (293 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 293.3/293.3 kB 20.9 MB/s eta 0:00:00
+Requirement already satisfied: numpy!=1.24.0,>=1.17 in /opt/app-root/lib/python3.9/site-packages (from seaborn==0.12.2->-r /opt/app-root/src/requirements.txt (line 1)) (1.24.4)
+Requirement already satisfied: pandas>=0.25 in /opt/app-root/lib/python3.9/site-packages (from seaborn==0.12.2->-r /opt/app-root/src/requirements.txt (line 1)) (1.5.3)
+Requirement already satisfied: matplotlib!=3.6.1,>=3.1 in /opt/app-root/lib/python3.9/site-packages (from seaborn==0.12.2->-r /opt/app-root/src/requirements.txt (line 1)) (3.6.3)
+Requirement already satisfied: pyparsing>=2.2.1 in /opt/app-root/lib/python3.9/site-packages (from matplotlib!=3.6.1,>=3.1->seaborn==0.12.2->-r /opt/app-root/src/requirements.txt (line 1)) (3.1.1)
+Requirement already satisfied: contourpy>=1.0.1 in /opt/app-root/lib/python3.9/site-packages (from matplotlib!=3.6.1,>=3.1->seaborn==0.12.2->-r /opt/app-root/src/requirements.txt (line 1)) (1.2.0)
+Requirement already satisfied: fonttools>=4.22.0 in /opt/app-root/lib/python3.9/site-packages (from matplotlib!=3.6.1,>=3.1->seaborn==0.12.2->-r /opt/app-root/src/requirements.txt (line 1)) (4.49.0)
+Requirement already satisfied: packaging>=20.0 in /opt/app-root/lib/python3.9/site-packages (from matplotlib!=3.6.1,>=3.1->seaborn==0.12.2->-r /opt/app-root/src/requirements.txt (line 1)) (23.2)
+Requirement already satisfied: cycler>=0.10 in /opt/app-root/lib/python3.9/site-packages (from matplotlib!=3.6.1,>=3.1->seaborn==0.12.2->-r /opt/app-root/src/requirements.txt (line 1)) (0.12.1)
+Requirement already satisfied: kiwisolver>=1.0.1 in /opt/app-root/lib/python3.9/site-packages (from matplotlib!=3.6.1,>=3.1->seaborn==0.12.2->-r /opt/app-root/src/requirements.txt (line 1)) (1.4.5)
+Requirement already satisfied: pillow>=6.2.0 in /opt/app-root/lib/python3.9/site-packages (from matplotlib!=3.6.1,>=3.1->seaborn==0.12.2->-r /opt/app-root/src/requirements.txt (line 1)) (10.2.0)
+Requirement already satisfied: python-dateutil>=2.7 in /opt/app-root/lib/python3.9/site-packages (from matplotlib!=3.6.1,>=3.1->seaborn==0.12.2->-r /opt/app-root/src/requirements.txt (line 1)) (2.8.2)
+Requirement already satisfied: pytz>=2020.1 in /opt/app-root/lib/python3.9/site-packages (from pandas>=0.25->seaborn==0.12.2->-r /opt/app-root/src/requirements.txt (line 1)) (2024.1)
+Requirement already satisfied: six>=1.5 in /opt/app-root/lib/python3.9/site-packages (from python-dateutil>=2.7->matplotlib!=3.6.1,>=3.1->seaborn==0.12.2->-r /opt/app-root/src/requirements.txt (line 1)) (1.16.0)
+Installing collected packages: seaborn
+Successfully installed seaborn-0.12.2
+---------------------------------- pip freeze ----------------------------------
+absl-py==1.4.0
+aiofiles==22.1.0
+aiohttp==3.9.3
+aiohttp-cors==0.7.0
+aiosignal==1.3.1
+aiosqlite==0.19.0
+anyio==4.3.0
+argon2-cffi==23.1.0
+argon2-cffi-bindings==21.2.0
+arrow==1.3.0
+astroid==3.0.3
+asttokens==2.4.1
+async-timeout==4.0.3
+attrs==23.2.0
+autopep8==2.0.4
+Babel==2.14.0
+bcrypt==4.1.2
+beautifulsoup4==4.12.3
+black==24.2.0
+bleach==6.1.0
+blessed==1.20.0
+bokeh==3.3.4
+boto3==1.28.85
+botocore==1.31.85
+cachetools==5.3.2
+certifi==2024.2.2
+cffi==1.16.0
+charset-normalizer==3.3.2
+click==8.1.7
+cloudpickle==2.2.1
+codeflare-sdk==0.13.0
+codeflare-torchx==0.6.0.dev1
+colorama==0.4.6
+colorful==0.5.6
+comm==0.2.1
+commonmark==0.9.1
+contourpy==1.2.0
+cryptography==40.0.2
+cycler==0.12.1
+debugpy==1.8.1
+decorator==5.1.1
+defusedxml==0.7.1
+Deprecated==1.2.14
+deprecation==2.1.0
+dill==0.3.8
+distlib==0.3.8
+dnspython==2.6.1
+docker==7.0.0
+docstring-to-markdown==0.14
+docstring_parser==0.8.1
+elyra-code-snippet-extension==3.15.0
+elyra-pipeline-editor-extension==3.15.0
+elyra-python-editor-extension==3.15.0
+elyra-server==3.15.0
+entrypoints==0.4
+exceptiongroup==1.2.0
+executing==1.2.0
+fastjsonschema==2.19.1
+filelock==3.13.1
+fire==0.5.0
+flake8==7.0.0
+fonttools==4.49.0
+fqdn==1.5.1
+frozenlist==1.4.1
+fsspec==2024.2.0
+gitdb==4.0.11
+GitPython==3.1.42
+google-api-core==2.17.1
+google-api-python-client==1.12.11
+google-auth==2.28.0
+google-auth-httplib2==0.2.0
+google-cloud-core==2.4.1
+google-cloud-storage==2.14.0
+google-crc32c==1.5.0
+google-resumable-media==2.7.0
+googleapis-common-protos==1.62.0
+gpustat==1.1.1
+grpcio==1.60.1
+httplib2==0.22.0
+idna==3.6
+importlib-metadata==7.0.1
+ipykernel==6.29.2
+ipython==8.18.1
+ipython-genutils==0.2.0
+ipywidgets==8.1.2
+isoduration==20.11.0
+isort==5.13.2
+jedi==0.19.1
+Jinja2==3.1.3
+jmespath==1.0.1
+joblib==1.3.2
+json5==0.9.14
+jsonpointer==2.4
+jsonschema==4.21.1
+jsonschema-specifications==2023.12.1
+jupyter-bokeh==3.0.7
+jupyter-events==0.9.0
+jupyter-lsp==2.2.2
+jupyter-resource-usage==1.0.1
+jupyter-server-mathjax==0.2.6
+jupyter-ydoc==0.2.5
+jupyter_client==7.4.9
+jupyter_core==5.7.1
+jupyter_packaging==0.12.3
+jupyter_server==2.7.3
+jupyter_server_fileid==0.9.1
+jupyter_server_proxy==4.0.0
+jupyter_server_terminals==0.4.4
+jupyter_server_ydoc==0.8.0
+jupyterlab==3.6.7
+jupyterlab-lsp==4.2.0
+jupyterlab_git==0.42.0
+jupyterlab_pygments==0.3.0
+jupyterlab_server==2.25.3
+jupyterlab_widgets==3.0.10
+kafka-python==2.0.2
+kfp==1.8.22
+kfp-pipeline-spec==0.1.16
+kfp-server-api==1.8.5
+kfp-tekton==1.5.9
+kiwisolver==1.4.5
+kubernetes==25.3.0
+MarkupSafe==2.1.5
+matplotlib==3.6.3
+matplotlib-inline==0.1.6
+mccabe==0.7.0
+micropipenv==1.6.0
+minio==7.2.4
+mistune==3.0.2
+msgpack==1.0.7
+multidict==6.0.5
+mypy-extensions==1.0.0
+mysql-connector-python==8.0.33
+nbclassic==1.0.0
+nbclient==0.9.0
+nbconvert==7.16.1
+nbdime==3.2.1
+nbformat==5.9.2
+nbgitpuller==1.2.0
+nest-asyncio==1.6.0
+networkx==3.2.1
+notebook==6.5.6
+notebook_shim==0.2.4
+numpy==1.24.4
+nvidia-ml-py==12.535.133
+oauthlib==3.2.2
+onnx==1.15.0
+onnxconverter-common==1.14.0
+opencensus==0.11.4
+opencensus-context==0.1.3
+openshift-client==1.0.18
+overrides==7.7.0
+packaging==23.2
+pandas==1.5.3
+pandocfilters==1.5.1
+papermill==2.5.0
+paramiko==3.4.0
+parso==0.8.3
+pathspec==0.12.1
+pexpect==4.9.0
+pillow==10.2.0
+platformdirs==3.11.0
+plotly==5.16.1
+pluggy==1.4.0
+prometheus_client==0.20.0
+prompt-toolkit==3.0.43
+protobuf==3.20.2
+psutil==5.9.8
+psycopg==3.1.18
+ptyprocess==0.7.0
+pure-eval==0.2.2
+py-spy==0.3.14
+pyarrow==15.0.0
+pyasn1==0.5.1
+pyasn1-modules==0.3.0
+pycodestyle==2.11.1
+pycparser==2.21
+pycryptodome==3.20.0
+pydantic==1.10.14
+pydocstyle==6.3.0
+pyflakes==3.2.0
+PyGithub==2.2.0
+Pygments==2.17.2
+PyJWT==2.8.0
+pylint==3.0.3
+pymongo==4.5.0
+PyNaCl==1.5.0
+pyodbc==4.0.39
+pyparsing==3.1.1
+pyre-extensions==0.0.30
+python-dateutil==2.8.2
+python-json-logger==2.0.7
+python-lsp-jsonrpc==1.1.2
+python-lsp-server==1.10.0
+pytoolconfig==1.3.1
+pytz==2024.1
+PyYAML==6.0.1
+pyzmq==24.0.1
+ray==2.7.0
+referencing==0.33.0
+requests==2.31.0
+requests-oauthlib==1.3.1
+requests-toolbelt==0.10.1
+rfc3339-validator==0.1.4
+rfc3986-validator==0.1.1
+rich==12.6.0
+rope==1.12.0
+rpds-py==0.18.0
+rsa==4.9
+s3transfer==0.7.0
+scikit-learn==1.3.2
+scipy==1.11.4
+seaborn==0.12.2
+Send2Trash==1.8.2
+simpervisor==1.0.0
+six==1.16.0
+skl2onnx==1.15.0
+smart-open==6.4.0
+smmap==5.0.1
+sniffio==1.3.0
+snowballstemmer==2.2.0
+soupsieve==2.5
+stack-data==0.6.3
+strip-hints==0.1.10
+tabulate==0.9.0
+tenacity==8.2.3
+termcolor==2.4.0
+terminado==0.18.0
+threadpoolctl==3.3.0
+tinycss2==1.2.1
+toml==0.10.2
+tomli==2.0.1
+tomlkit==0.12.3
+tornado==6.4
+tqdm==4.66.2
+traitlets==5.14.1
+typer==0.9.0
+types-python-dateutil==2.8.19.20240106
+typing-inspect==0.9.0
+typing_extensions==4.9.0
+ujson==5.9.0
+uri-template==1.3.0
+uritemplate==3.0.1
+urllib3==1.26.18
+virtualenv==20.21.0
+watchdog==4.0.0
+wcwidth==0.2.13
+webcolors==1.13
+webencodings==0.5.1
+websocket-client==1.7.0
+whatthepatch==1.0.5
+widgetsnbextension==4.0.10
+wrapt==1.16.0
+xyzservices==2023.10.1
+y-py==0.6.2
+yapf==0.40.2
+yarl==1.9.4
+yaspin==3.0.1
+ypy-websocket==0.8.4
+zipp==3.17.0
+---------------------------------- pip freeze ----------------------------------
+--> 84af6226cb8c
+STEP 4/4: RUN chmod -R g+w /opt/app-root/lib/python3.9/site-packages &&     fix-permissions /opt/app-root -P
+COMMIT registry.ocp4.example.com:8443/student/custom-workbench:2024v1
+--> 7661cf787195
+Successfully tagged registry.ocp4.example.com:8443/student/custom-workbench:2024v1
+7661cf78719516268b7d519dc587758826d53c30ea2e22bbcb7db31eac47859d
+[student@workstation customnotebook-create]$ podman images
+REPOSITORY                                                   TAG                                                         IMAGE ID      CREATED        SIZE
+registry.ocp4.example.com:8443/student/custom-workbench      2024v1                                                      7661cf787195  5 minutes ago  4.45 GB
+registry.ocp4.example.com:8443/opendatahub/workbench-images  jupyter-datascience-ubi9-python-3.9-2023b-20240219-ffe72a0  769eda83a903  22 months ago  2.9 GB
+[student@workstation customnotebook-create]$ podman push  registry.ocp4.example.com:8443/student/custom-workbench:2024v1
+Getting image source signatures
+Copying blob 192fc89b270a done   | 
+Copying blob 5196a681d752 done   | 
+Copying blob 26d4000bf590 done   | 
+Copying blob 1f19e1686935 skipped: already exists  
+Copying blob babccbde94a1 skipped: already exists  
+Error: trying to reuse blob sha256:f421bec48ce599d98007300b84ff30cbfc3349c3bd787e571f7d9bda45b8c20f at destination: Requesting bearer token: invalid status code from registry 405 (Method Not Allowed)
+[student@workstation customnotebook-create]$ podman push  registry.ocp4.example.com:8443/student/custom-workbench:2024v1
+Getting image source signatures
+Copying blob 1f19e1686935 skipped: already exists  
+Copying blob babccbde94a1 skipped: already exists  
+Copying blob b2c40c31b7dc skipped: already exists  
+Copying blob 32618154fd59 skipped: already exists  
+Copying blob 441c8e35e22d skipped: already exists  
+Copying blob 9619aa272283 skipped: already exists  
+Copying blob 1bd75c368cb5 skipped: already exists  
+Copying blob 7fcbb355ddc0 skipped: already exists  
+Copying blob 8f575b3b5f34 skipped: already exists  
+Copying blob fa1fa014a6fc skipped: already exists  
+Copying config 7661cf7871 done   | 
+Writing manifest to image destination
+[student@workstation customnotebook-create]$ cd ../../
+[student@workstation AI263]$ cd ~
+[student@workstation ~]$ lab install -u AI265 && lab start serving-saving
+WARNING: Skipping rht-labs-ai265 as it is not installed.
+Version lock is >=2.13,<2.14
+Installed "rht-labs-ai265>=2.13,<2.14".
+SUCCESS Verifying cluster state
+SUCCESS Verifying OCP developer credentials
+SUCCESS Verifying OCP admin credentials
+SUCCESS Allowing insecure traffic to the minio-api route in the minio project
+SUCCESS Creating saved-models bucket
+        - saved-models bucket created.
+SUCCESS Creating the serving-saving project
+        - Project 'serving-saving' created.
+SUCCESS Creating data connection for saved-models S3 bucket in the serving-saving project
+SUCCESS Creating the serving-saving-wb workbench
+SUCCESS Waiting for serving-saving-wb workbench to be running
+SUCCESS Cloning the AI26X-apps repository in serving-saving-wb workbench
+[student@workstation ~]$ ls -la
+total 28
+drwx------. 24 student student 4096 Dec 11 23:59 .
+drwxr-xr-x.  5 root    root      53 Nov 24 09:34 ..
+drwxr-xr-x.  3 student student   17 Aug 28  2024 .ansible
+drwx------.  2 student student   29 Nov  2  2024 .auth
+-rw-r--r--.  1 student student   18 Feb 15  2024 .bash_logout
+-rw-r--r--.  1 student student  141 Feb 15  2024 .bash_profile
+-rw-r--r--.  1 student student  492 Feb 15  2024 .bashrc
+drwxr-xr-x. 13 student student 4096 Nov 25 00:39 .cache
+drwxr-x---. 11 student student 4096 Dec 12 00:03 .config
+drwxr-xr-x.  2 student student   71 Mar 20  2025 .grading
+drwxr-xr-x.  2 student student    6 Mar 20  2025 .ipython
+drwxr-xr-x.  3 student student   33 Nov 25 00:15 .jupyter
+drwxr-x---.  3 student student   33 Nov 25 00:38 .kube
+drwxr-xr-x.  4 student student   32 Nov  2  2024 .local
+drwxr-xr-x.  4 student student   39 Nov 25 00:39 .mozilla
+drwxr-xr-x.  3 student student   19 Mar 20  2025 .npm
+drwx------.  2 student student   96 Nov 25 00:15 .ssh
+drwxr-xr-x.  3 student student   18 Aug 28  2024 .venv
+drwxr-xr-x.  3 student student   18 Dec 11 23:59 AI263
+drwxr-xr-x.  2 student student    6 Nov  2  2024 Desktop
+drwxr-xr-x.  2 student student    6 Nov  2  2024 Documents
+drwxr-xr-x.  2 student student    6 Nov  2  2024 Downloads
+drwxr-xr-x.  2 student student    6 Nov  2  2024 Music
+drwxr-xr-x.  2 student student    6 Nov  2  2024 Pictures
+drwxr-xr-x.  2 student student    6 Nov  2  2024 Public
+drwxr-xr-x.  2 student student    6 Nov  2  2024 Templates
+drwxr-xr-x.  2 student student    6 Nov  2  2024 Videos
+-rw-------.  1 student student  437 Dec 11 23:17 htpasswd
+[student@workstation ~]$ cat .s3
+cat: .s3: No such file or directory
+[student@workstation ~]$ ls .s*
+authorized_keys  config  known_hosts  lab_rsa  lab_rsa.pub
+[student@workstation ~]$ ls
+AI263  Desktop  Documents  Downloads  Music  Pictures  Public  Templates  Videos  htpasswd
+[student@workstation ~]$ cd AI263/labs/
+[student@workstation labs]$ ls
+customnotebook-create
+[student@workstation labs]$ cd ~
+[student@workstation ~]$ ls
+AI263  Desktop  Documents  Downloads  Music  Pictures  Public  Templates  Videos  htpasswd
+[student@workstation ~]$ vi s3-config.txt
+[student@workstation ~]$ oc get sec
+secrets
+securitycontextconstraints.security.openshift.io
+[student@workstation ~]$ oc get secrets -n prediction
+No resources found in prediction namespace.
+[student@workstation ~]$ oc get secrets
+NAME                                                              TYPE                      DATA   AGE
+anaconda-ce-access                                                Opaque                    0      266d
+argo-dockercfg-2hkcf                                              kubernetes.io/dockercfg   1      266d
+builder-dockercfg-4gxh2                                           kubernetes.io/dockercfg   1      266d
+dashboard-oauth-client                                            Opaque                    0      266d
+dashboard-oauth-client-generated                                  Opaque                    1      266d
+dashboard-oauth-config                                            Opaque                    0      266d
+dashboard-oauth-config-generated                                  Opaque                    1      266d
+dashboard-proxy-tls                                               kubernetes.io/tls         2      266d
+data-science-pipelines-operator-contro-d9fbdd90-dockercfg-8wb5f   kubernetes.io/dockercfg   1      266d
+default-dockercfg-lmp9l                                           kubernetes.io/dockercfg   1      266d
+deployer-dockercfg-fqn6x                                          kubernetes.io/dockercfg   1      266d
+etcd-passwords                                                    string                    1      266d
+etcd-serviceaccount-dockercfg-fn9cn                               kubernetes.io/dockercfg   1      266d
+kserve-controller-manager-dockercfg-ktrrc                         kubernetes.io/dockercfg   1      266d
+kserve-webhook-server-cert                                        kubernetes.io/tls         2      266d
+kserve-webhook-server-secret                                      Opaque                    0      266d
+model-serving-etcd                                                string                    1      266d
+model-serving-proxy-tls                                           kubernetes.io/tls         2      266d
+modelmesh-controller-dockercfg-4x86w                              kubernetes.io/dockercfg   1      266d
+modelmesh-dockercfg-msclw                                         kubernetes.io/dockercfg   1      266d
+modelmesh-serving-sa-dockercfg-k2bhm                              kubernetes.io/dockercfg   1      266d
+modelmesh-webhook-server-cert                                     kubernetes.io/tls         2      266d
+notebook-controller-service-account-dockercfg-mqffr               kubernetes.io/dockercfg   1      266d
+odh-model-controller-dockercfg-zgd57                              kubernetes.io/dockercfg   1      266d
+odh-model-controller-webhook-cert                                 kubernetes.io/tls         2      266d
+odh-notebook-controller-manager-dockercfg-hctkp                   kubernetes.io/dockercfg   1      266d
+odh-notebook-controller-webhook-cert                              kubernetes.io/tls         2      266d
+odh-segment-key                                                   Opaque                    1      266d
+pipeline-dockercfg-wkwvm                                          kubernetes.io/dockercfg   1      266d
+rhods-dashboard-dockercfg-p77wl                                   kubernetes.io/dockercfg   1      266d
+trustyai-service-operator-controller-manager-dockercfg-vbdvg      kubernetes.io/dockercfg   1      266d
+[student@workstation ~]$ oc get secrets | grep minio
+[student@workstation ~]$ oc get secrets | grep minio -a
+[student@workstation ~]$ oc get secrets | grep minio -A
+grep: option requires an argument -- 'A'
+Usage: grep [OPTION]... PATTERNS [FILE]...
+Try 'grep --help' for more information.
+[student@workstation ~]$ oc get secrets -A | grep minio
+minio                                              builder-dockercfg-zdp6v                                           kubernetes.io/dockercfg               1      266d
+minio                                              default-dockercfg-n4k49                                           kubernetes.io/dockercfg               1      266d
+minio                                              deployer-dockercfg-gsrc9                                          kubernetes.io/dockercfg               1      266d
+minio                                              minio-secret                                                      Opaque                                2      266d
+minio                                              pipeline-dockercfg-7ctn7                                          kubernetes.io/dockercfg               1      266d
+serving-saving                                     aws-connection-s3-minio                                           Opaque                                5      40m
+[student@workstation ~]$ oc get secrets -n serving-saving 
+NAME                                TYPE                      DATA   AGE
+aws-connection-gowri-connection     Opaque                    5      4m42s
+aws-connection-s3-minio             Opaque                    5      41m
+builder-dockercfg-hsmwq             kubernetes.io/dockercfg   1      41m
+default-dockercfg-l4wds             kubernetes.io/dockercfg   1      41m
+deployer-dockercfg-ddw2s            kubernetes.io/dockercfg   1      41m
+pipeline-dockercfg-cw8zd            kubernetes.io/dockercfg   1      41m
+serving-saving-wb-dockercfg-87p8x   kubernetes.io/dockercfg   1      41m
+serving-saving-wb-oauth-config      Opaque                    1      41m
+serving-saving-wb-tls               kubernetes.io/tls         2      41m
+storage-config                      Opaque                    2      41m
+[student@workstation ~]$ oc get secrets -n serving-saving aws-connection-s3-minio 
+NAME                      TYPE     DATA   AGE
+aws-connection-s3-minio   Opaque   5      41m
+[student@workstation ~]$ oc get secrets -n serving-saving aws-connection-s3-minio -o yaml
+apiVersion: v1
+data:
+  AWS_ACCESS_KEY_ID: bWluaW8=
+  AWS_DEFAULT_REGION: YW55
+  AWS_S3_BUCKET: c2F2ZWQtbW9kZWxz
+  AWS_S3_ENDPOINT: bWluaW8tYXBpLW1pbmlvLmFwcHMub2NwNC5leGFtcGxlLmNvbQ==
+  AWS_SECRET_ACCESS_KEY: bWluaW8xMjM=
+kind: Secret
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Secret","metadata":{"annotations":{"opendatahub.io/connection-type":"s3","openshift.io/display-name":"s3-minio"},"labels":{"opendatahub.io/dashboard":"true","opendatahub.io/managed":"true"},"name":"aws-connection-s3-minio","namespace":"serving-saving"},"stringData":{"AWS_ACCESS_KEY_ID":"minio","AWS_DEFAULT_REGION":"any","AWS_S3_BUCKET":"saved-models","AWS_S3_ENDPOINT":"minio-api-minio.apps.ocp4.example.com","AWS_SECRET_ACCESS_KEY":"minio123"},"type":"Opaque"}
+    opendatahub.io/connection-type: s3
+    openshift.io/display-name: s3-minio
+  creationTimestamp: "2025-12-12T05:34:37Z"
+  labels:
+    opendatahub.io/dashboard: "true"
+    opendatahub.io/managed: "true"
+  name: aws-connection-s3-minio
+  namespace: serving-saving
+  resourceVersion: "25270886"
+  uid: 96de42eb-0c8e-47a6-abeb-ffee0cc726d8
+type: Opaque
+[student@workstation ~]$ lab install -u AI265 && lab start rhoaiserving-using
+Version lock is >=2.13,<2.14
+Installed "rht-labs-ai265>=2.13,<2.14".
+   \    Downloading models to /home/student/models/home/student/.venv/labs/lib/python3.9/site-packages/urllib3/connectionpool.py:1064: InsecureRequestWarning: Unverified HTTPS request is being made to host 'registry.ocp4.example.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  warnings.warn(
+SUCCESS Downloading models to /home/student/models
+SUCCESS Verifying cluster state
+SUCCESS Creating the rhoai-validation project
+        - Project 'rhoai-validation' created.
+SUCCESS Creating the rhoai-validation-wb workbench
+SUCCESS Creating the rhoai-multimodel project
+        - Project 'rhoai-multimodel' created.
+SUCCESS Creating the rhoai-singlemodel project
+        - Project 'rhoai-singlemodel' created.
+SUCCESS Allowing insecure traffic to the minio-api route in the minio project
+SUCCESS Waiting for S3 to be ready
+SUCCESS Creating models-bucket bucket
+        - models-bucket bucket created.
+SUCCESS Creating data connection for models-bucket S3 bucket in the rhoai-multimodel project
+SUCCESS Creating data connection for models-bucket S3 bucket in the rhoai-singlemodel project
+SUCCESS Uploading models to S3 with the OpenVINO structure
+        - Uploading /home/student/models/distilbert to models-bucket/models/distilbert/1/
+        - Uploading /home/student/models/diabetes to models-bucket/models/diabetes/1/
+        - Uploading /home/student/models/iris to models-bucket/models/iris/1/
+SUCCESS Waiting for the rhoai-validation-wb workbench to start (you can proceed with the exercise in the meantime). 
+SUCCESS Cloning the AI26X-apps repository in rhoai-validation-wb workbench
+[student@workstation ~]$ curl -s https://distilbert.rhoai-singlemodel.svc.cluster.local
+[student@workstation ~]$ https://distilbert.rhoai-singlemodel.svc.cluster.local
